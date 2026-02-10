@@ -74,6 +74,7 @@ const App = () => (
               <Route path="profile" element={<InstitutionProfile />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="academics" element={<AcademicControl />} />
+              <Route path="exams" element={<ExamManagement />} />
               <Route path="communication" element={<CommunicationCenter />} />
               <Route path="billing" element={<BillingSubscription />} />
               <Route path="settings" element={<InstitutionSettings />} />
