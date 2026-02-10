@@ -23,6 +23,7 @@ import AcademicControl from "./pages/institution/AcademicControl";
 import CommunicationCenter from "./pages/institution/CommunicationCenter";
 import BillingSubscription from "./pages/institution/BillingSubscription";
 import InstitutionSettings from "./pages/institution/InstitutionSettings";
+import ExamManagement from "./pages/institution/ExamManagement";
 import CmsPages from "./pages/institution/cms/CmsPages";
 import CmsPageEditor from "./pages/institution/cms/CmsPageEditor";
 import CmsMenuManager from "./pages/institution/cms/CmsMenuManager";
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="profile" element={<InstitutionProfile />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="academics" element={<AcademicControl />} />
+              <Route path="exams" element={<ExamManagement />} />
               <Route path="communication" element={<CommunicationCenter />} />
               <Route path="billing" element={<BillingSubscription />} />
               <Route path="settings" element={<InstitutionSettings />} />

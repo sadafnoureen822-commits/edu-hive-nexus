@@ -9,6 +9,7 @@ import {
   Building2,
   Users,
   GraduationCap,
+  ClipboardList,
   MessageSquare,
   CreditCard,
   Settings,
@@ -39,6 +40,7 @@ const navSections = [
       { href: "/profile", label: "Institution Profile", icon: Building2 },
       { href: "/users", label: "User Management", icon: Users },
       { href: "/academics", label: "Academics", icon: GraduationCap },
+      { href: "/exams", label: "Examinations", icon: ClipboardList },
     ],
   },
   {
