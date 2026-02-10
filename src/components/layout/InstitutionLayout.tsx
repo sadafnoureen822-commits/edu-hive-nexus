@@ -9,6 +9,7 @@ import {
   Building2,
   Users,
   GraduationCap,
+  ClipboardList,
   MessageSquare,
   CreditCard,
   Settings,
