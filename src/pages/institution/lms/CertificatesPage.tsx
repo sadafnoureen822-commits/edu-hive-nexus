@@ -45,7 +45,7 @@ export default function CertificatesPage() {
   };
 
   const onSubmitTemplate = async (values: { name: string; template_type: string; template_html: string; background_url: string; logo_url: string }) => {
-    if (editingTemplate) await updateTemplate.mutateAsync({ id: editingTemplate.id, ...values });
+    if (editingTemplate) await updateTemplate.mutateAsync({ id: editingTemplate.id, ...values as Parameters<typeof updateTemplate.mutateAsync>[0] });
     else await createTemplate.mutateAsync(values);
     setTDialog(false);
   };

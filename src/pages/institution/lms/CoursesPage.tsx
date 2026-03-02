@@ -47,7 +47,7 @@ export default function CoursesPage() {
 
   const onSubmit = async (values: { title: string; description: string; status: string }) => {
     if (editingCourse) {
-      await updateCourse.mutateAsync({ id: editingCourse.id, ...values });
+      await updateCourse.mutateAsync({ id: editingCourse.id, ...values as Parameters<typeof updateCourse.mutateAsync>[0] });
     } else {
       await createCourse.mutateAsync(values);
     }
