@@ -23,6 +23,10 @@ import {
   Menu,
   Image,
   Palette,
+  BookOpen,
+  PenSquare,
+  HelpCircle,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";

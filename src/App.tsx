@@ -87,6 +87,11 @@ const App = () => (
               <Route path="cms/menus" element={<CmsMenuManager />} />
               <Route path="cms/media" element={<CmsMediaManager />} />
               <Route path="cms/settings" element={<CmsSiteSettings />} />
+              {/* LMS Routes */}
+              <Route path="courses" element={<CoursesPage />} />
+              <Route path="assignments" element={<AssignmentsPage />} />
+              <Route path="quizzes" element={<QuizzesPage />} />
+              <Route path="certificates" element={<CertificatesPage />} />
             </Route>
 
             {/* Public institution website */}
