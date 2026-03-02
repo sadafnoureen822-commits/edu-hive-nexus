@@ -10,8 +10,8 @@ export type CertificateTemplate = {
   template_html: string | null;
   background_url: string | null;
   logo_url: string | null;
-  signature_urls: unknown[];
-  fields: unknown[];
+  signature_urls: import("@/integrations/supabase/types").Json;
+  fields: import("@/integrations/supabase/types").Json;
   is_active: boolean;
   created_at: string;
   updated_at: string;
