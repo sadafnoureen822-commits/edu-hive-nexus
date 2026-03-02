@@ -48,6 +48,15 @@ const navSections = [
     ],
   },
   {
+    label: "LMS",
+    items: [
+      { href: "/courses", label: "Courses", icon: BookOpen },
+      { href: "/assignments", label: "Assignments", icon: PenSquare },
+      { href: "/quizzes", label: "Quizzes", icon: HelpCircle },
+      { href: "/certificates", label: "Certificates", icon: Award },
+    ],
+  },
+  {
     label: "Engage",
     items: [
       { href: "/communication", label: "Communication", icon: MessageSquare },
