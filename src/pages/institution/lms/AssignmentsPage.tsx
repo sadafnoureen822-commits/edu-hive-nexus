@@ -42,7 +42,7 @@ export default function AssignmentsPage() {
     setDialog(true);
   };
 
-  const onSubmit = async (values: typeof watch()) => {
+  const onSubmit = async (values: { title: string; description: string; instructions: string; due_date: string; total_marks: number; passing_marks: number; status: string }) => {
     const payload = { ...values, total_marks: Number(values.total_marks), passing_marks: Number(values.passing_marks) };
     if (editing) await updateAssignment.mutateAsync({ id: editing.id, ...payload });
     else await createAssignment.mutateAsync(payload);

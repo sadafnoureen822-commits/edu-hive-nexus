@@ -37,7 +37,7 @@ export default function QuizzesPage() {
     setDialog(true);
   };
 
-  const onSubmit = async (values: typeof watch()) => {
+  const onSubmit = async (values: { title: string; description: string; duration_minutes: number; total_marks: number; passing_marks: number; max_attempts: number; status: string }) => {
     const payload = { ...values, duration_minutes: Number(values.duration_minutes), total_marks: Number(values.total_marks), passing_marks: Number(values.passing_marks), max_attempts: Number(values.max_attempts) };
     if (editing) await updateQuiz.mutateAsync({ id: editing.id, ...payload });
     else await createQuiz.mutateAsync(payload);
