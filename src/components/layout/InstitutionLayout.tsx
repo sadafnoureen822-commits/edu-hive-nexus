@@ -23,6 +23,10 @@ import {
   Menu,
   Image,
   Palette,
+  BookOpen,
+  PenSquare,
+  HelpCircle,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -41,6 +45,15 @@ const navSections = [
       { href: "/users", label: "User Management", icon: Users },
       { href: "/academics", label: "Academics", icon: GraduationCap },
       { href: "/exams", label: "Examinations", icon: ClipboardList },
+    ],
+  },
+  {
+    label: "LMS",
+    items: [
+      { href: "/courses", label: "Courses", icon: BookOpen },
+      { href: "/assignments", label: "Assignments", icon: PenSquare },
+      { href: "/quizzes", label: "Quizzes", icon: HelpCircle },
+      { href: "/certificates", label: "Certificates", icon: Award },
     ],
   },
   {

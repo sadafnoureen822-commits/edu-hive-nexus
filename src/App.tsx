@@ -29,6 +29,10 @@ import CmsPageEditor from "./pages/institution/cms/CmsPageEditor";
 import CmsMenuManager from "./pages/institution/cms/CmsMenuManager";
 import CmsMediaManager from "./pages/institution/cms/CmsMediaManager";
 import CmsSiteSettings from "./pages/institution/cms/CmsSiteSettings";
+import CoursesPage from "./pages/institution/lms/CoursesPage";
+import AssignmentsPage from "./pages/institution/lms/AssignmentsPage";
+import QuizzesPage from "./pages/institution/lms/QuizzesPage";
+import CertificatesPage from "./pages/institution/lms/CertificatesPage";
 import PublicSite from "./pages/public/PublicSite";
 
 const queryClient = new QueryClient();
@@ -83,6 +87,11 @@ const App = () => (
               <Route path="cms/menus" element={<CmsMenuManager />} />
               <Route path="cms/media" element={<CmsMediaManager />} />
               <Route path="cms/settings" element={<CmsSiteSettings />} />
+              {/* LMS Routes */}
+              <Route path="courses" element={<CoursesPage />} />
+              <Route path="assignments" element={<AssignmentsPage />} />
+              <Route path="quizzes" element={<QuizzesPage />} />
+              <Route path="certificates" element={<CertificatesPage />} />
             </Route>
 
             {/* Public institution website */}
