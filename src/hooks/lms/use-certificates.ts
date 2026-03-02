@@ -115,7 +115,13 @@ export function useIssueCertificate(institutionId: string) {
     }) => {
       const { data, error } = await supabase
         .from("issued_certificates")
-        .insert([{ ...values, institution_id: institutionId }] as Parameters<ReturnType<typeof supabase.from<"issued_certificates">>["insert"]>[0])
+        .insert({
+          template_id: values.template_id,
+          student_id: values.student_id,
+          serial_number: values.serial_number,
+          institution_id: institutionId,
+          certificate_data: values.certificate_data as import("@/integrations/supabase/types").Json,
+        })
         .select()
         .single();
       if (error) throw error;
