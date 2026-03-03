@@ -33,7 +33,7 @@ export default function CertificatesPage() {
     defaultValues: { name: "", template_type: "certificate", template_html: "", background_url: "", logo_url: "" },
   });
 
-  const { register: rI, handleSubmit: hI, reset: resetI } = useForm({
+  const { register: rI, handleSubmit: hI, reset: resetI, setValue: svI, watch: wI } = useForm({
     defaultValues: { template_id: "", student_id: "", student_name: "", course: "" },
   });
 
@@ -158,7 +158,7 @@ export default function CertificatesPage() {
                           <p className="text-[11px] text-muted-foreground mt-0.5">Issued: {format(new Date(c.issued_at), "dd MMM yyyy")}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Shield className="h-4 w-4 text-green-500" />
+                          <Shield className="h-4 w-4 text-primary" />
                           {!c.is_revoked && (
                             <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => revokeCert.mutate(c.id)}>
                               <AlertCircle className="h-3 w-3 mr-1" /> Revoke
@@ -210,7 +210,7 @@ export default function CertificatesPage() {
           <form onSubmit={hI(onIssue)} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Template *</Label>
-              <Select onValueChange={(v) => rI("template_id").onChange({ target: { value: v } })}>
+              <Select value={wI("template_id")} onValueChange={(v) => svI("template_id", v)}>
                 <SelectTrigger><SelectValue placeholder="Select template" /></SelectTrigger>
                 <SelectContent>{templates.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent>
               </Select>

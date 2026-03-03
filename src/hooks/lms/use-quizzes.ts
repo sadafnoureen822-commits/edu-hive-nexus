@@ -62,7 +62,7 @@ export function useQuizWithQuestions(quizId: string | undefined) {
   return useQuery({
     queryKey: ["quiz-detail", quizId],
     queryFn: async () => {
-      if (!quizId) return null;
+      if (!quizId) return [];
       const { data, error } = await supabase
         .from("quiz_questions")
         .select("*, quiz_options(*)")
