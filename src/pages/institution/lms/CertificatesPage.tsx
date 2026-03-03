@@ -158,7 +158,7 @@ export default function CertificatesPage() {
                           <p className="text-[11px] text-muted-foreground mt-0.5">Issued: {format(new Date(c.issued_at), "dd MMM yyyy")}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Shield className="h-4 w-4 text-green-500" />
+                          <Shield className="h-4 w-4 text-primary" />
                           {!c.is_revoked && (
                             <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => revokeCert.mutate(c.id)}>
                               <AlertCircle className="h-3 w-3 mr-1" /> Revoke
