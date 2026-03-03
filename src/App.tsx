@@ -33,6 +33,9 @@ import CoursesPage from "./pages/institution/lms/CoursesPage";
 import AssignmentsPage from "./pages/institution/lms/AssignmentsPage";
 import QuizzesPage from "./pages/institution/lms/QuizzesPage";
 import CertificatesPage from "./pages/institution/lms/CertificatesPage";
+import AttendancePage from "./pages/institution/AttendancePage";
+import StudentDashboard from "./pages/institution/portals/StudentDashboard";
+import TeacherDashboard from "./pages/institution/portals/TeacherDashboard";
 import PublicSite from "./pages/public/PublicSite";
 
 const queryClient = new QueryClient();
@@ -92,6 +95,11 @@ const App = () => (
               <Route path="assignments" element={<AssignmentsPage />} />
               <Route path="quizzes" element={<QuizzesPage />} />
               <Route path="certificates" element={<CertificatesPage />} />
+              {/* Attendance */}
+              <Route path="attendance" element={<AttendancePage />} />
+              {/* Role Portals */}
+              <Route path="student" element={<StudentDashboard />} />
+              <Route path="teacher" element={<TeacherDashboard />} />
             </Route>
 
             {/* Public institution website */}

@@ -184,6 +184,80 @@ export type Database = {
           },
         ]
       }
+      attendance: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          date: string
+          id: string
+          institution_id: string
+          marked_by: string | null
+          notes: string | null
+          section_id: string | null
+          status: string
+          student_id: string
+          subject_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          date: string
+          id?: string
+          institution_id: string
+          marked_by?: string | null
+          notes?: string | null
+          section_id?: string | null
+          status?: string
+          student_id: string
+          subject_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          institution_id?: string
+          marked_by?: string | null
+          notes?: string | null
+          section_id?: string | null
+          status?: string
+          student_id?: string
+          subject_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificate_templates: {
         Row: {
           background_url: string | null
@@ -1873,6 +1947,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "subjects_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_logs: {
+        Row: {
+          audience: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          institution_id: string
+          message: string
+          message_id: string | null
+          recipient_name: string | null
+          recipient_phone: string
+          sent_by: string | null
+          status: string
+        }
+        Insert: {
+          audience?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          institution_id: string
+          message: string
+          message_id?: string | null
+          recipient_name?: string | null
+          recipient_phone: string
+          sent_by?: string | null
+          status?: string
+        }
+        Update: {
+          audience?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          institution_id?: string
+          message?: string
+          message_id?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string
+          sent_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_logs_institution_id_fkey"
             columns: ["institution_id"]
             isOneToOne: false
             referencedRelation: "institutions"

@@ -27,16 +27,16 @@ import {
   PenSquare,
   HelpCircle,
   Award,
+  CalendarCheck,
+  UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
-const navSections = [
+const adminNavSections = [
   {
     label: "Overview",
-    items: [
-      { href: "", label: "Dashboard", icon: LayoutDashboard },
-    ],
+    items: [{ href: "", label: "Dashboard", icon: LayoutDashboard }],
   },
   {
     label: "Management",
@@ -45,6 +45,7 @@ const navSections = [
       { href: "/users", label: "User Management", icon: Users },
       { href: "/academics", label: "Academics", icon: GraduationCap },
       { href: "/exams", label: "Examinations", icon: ClipboardList },
+      { href: "/attendance", label: "Attendance", icon: CalendarCheck },
     ],
   },
   {
@@ -76,6 +77,38 @@ const navSections = [
     items: [
       { href: "/billing", label: "Billing", icon: CreditCard },
       { href: "/settings", label: "Settings", icon: Settings },
+    ],
+  },
+];
+
+const teacherNavSections = [
+  {
+    label: "Overview",
+    items: [{ href: "/teacher", label: "My Dashboard", icon: LayoutDashboard }],
+  },
+  {
+    label: "Teaching",
+    items: [
+      { href: "/courses", label: "Courses", icon: BookOpen },
+      { href: "/assignments", label: "Assignments", icon: PenSquare },
+      { href: "/quizzes", label: "Quizzes", icon: HelpCircle },
+      { href: "/attendance", label: "Attendance", icon: CalendarCheck },
+    ],
+  },
+];
+
+const studentNavSections = [
+  {
+    label: "Overview",
+    items: [{ href: "/student", label: "My Dashboard", icon: LayoutDashboard }],
+  },
+  {
+    label: "Learning",
+    items: [
+      { href: "/courses", label: "Courses", icon: BookOpen },
+      { href: "/assignments", label: "Assignments", icon: PenSquare },
+      { href: "/quizzes", label: "Quizzes", icon: HelpCircle },
+      { href: "/certificates", label: "My Certificates", icon: Award },
     ],
   },
 ];
@@ -197,7 +230,7 @@ export default function InstitutionLayout() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-4">
-          {navSections.map((section) => (
+          {(membership?.role === "student" ? studentNavSections : membership?.role === "teacher" ? teacherNavSections : adminNavSections).map((section) => (
             <div key={section.label}>
               {!collapsed && (
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1.5">
