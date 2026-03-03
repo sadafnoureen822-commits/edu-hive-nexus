@@ -210,7 +210,7 @@ export default function CertificatesPage() {
           <form onSubmit={hI(onIssue)} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Template *</Label>
-              <Select onValueChange={(v) => rI("template_id").onChange({ target: { value: v } })}>
+              <Select value={wI("template_id")} onValueChange={(v) => svI("template_id", v)}>
                 <SelectTrigger><SelectValue placeholder="Select template" /></SelectTrigger>
                 <SelectContent>{templates.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent>
               </Select>
