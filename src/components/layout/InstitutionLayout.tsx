@@ -27,6 +27,8 @@ import {
   PenSquare,
   HelpCircle,
   Award,
+  CalendarCheck,
+  UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
