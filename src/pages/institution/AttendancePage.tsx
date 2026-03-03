@@ -153,7 +153,7 @@ export default function AttendancePage() {
                           <p className="text-[11px] text-muted-foreground mt-0.5">{stats.present} / {stats.total} days present</p>
                         </div>
                         {stats.pct < 75 && (
-                          <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" title="Below 75% threshold" />
+                          <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
                         )}
                       </div>
                     );
