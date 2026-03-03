@@ -33,7 +33,7 @@ export default function CertificatesPage() {
     defaultValues: { name: "", template_type: "certificate", template_html: "", background_url: "", logo_url: "" },
   });
 
-  const { register: rI, handleSubmit: hI, reset: resetI } = useForm({
+  const { register: rI, handleSubmit: hI, reset: resetI, setValue: svI, watch: wI } = useForm({
     defaultValues: { template_id: "", student_id: "", student_name: "", course: "" },
   });
 
