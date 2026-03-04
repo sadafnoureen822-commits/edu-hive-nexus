@@ -69,6 +69,7 @@ const App = () => (
               <Route path="institutions/:id" element={<InstitutionDetail />} />
               <Route path="domains" element={<DomainsPage />} />
               <Route path="members" element={<MembersPage />} />
+              <Route path="billing" element={<BillingDashboard />} />
             </Route>
 
             {/* Institution admin routes (tenant) */}
