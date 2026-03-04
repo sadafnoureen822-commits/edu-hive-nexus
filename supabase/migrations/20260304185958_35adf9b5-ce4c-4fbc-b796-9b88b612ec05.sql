@@ -1,0 +1,1 @@
+ALTER TYPE public.institution_role ADD VALUE IF NOT EXISTS 'parent';

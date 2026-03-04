@@ -2360,6 +2360,7 @@ export type Database = {
         | "student"
         | "exam_controller"
         | "principal"
+        | "parent"
       institution_status: "active" | "suspended" | "pending"
       platform_role: "platform_admin"
     }
@@ -2531,6 +2532,7 @@ export const Constants = {
         "student",
         "exam_controller",
         "principal",
+        "parent",
       ],
       institution_status: ["active", "suspended", "pending"],
       platform_role: ["platform_admin"],
