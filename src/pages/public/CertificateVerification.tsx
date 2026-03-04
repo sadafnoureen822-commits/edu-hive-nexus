@@ -126,9 +126,9 @@ export default function CertificateVerification() {
 
         {/* Result */}
         {result && (
-          <Card className={`border-2 ${result.valid ? "border-green-500/30 bg-green-500/5" : "border-destructive/30 bg-destructive/5"}`}>
+          <Card className={`border-2 ${result.valid ? "border-accent/30 bg-accent/5" : "border-destructive/30 bg-destructive/5"}`}>
             <CardHeader>
-              <CardTitle className={`flex items-center gap-3 text-xl font-display ${result.valid ? "text-green-600 dark:text-green-400" : "text-destructive"}`}>
+              <CardTitle className={`flex items-center gap-3 text-xl font-display ${result.valid ? "text-accent" : "text-destructive"}`}>
                 {result.valid ? (
                   <><ShieldCheck className="h-7 w-7" /> Certificate Verified</>
                 ) : (
