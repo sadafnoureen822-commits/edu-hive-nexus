@@ -1,26 +1,98 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenant } from "@/contexts/TenantContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   CreditCard,
-  Download,
   Calendar,
   CheckCircle2,
-  Building2,
+  AlertCircle,
   Receipt,
+  Package,
+  Download,
+  Loader2,
 } from "lucide-react";
 
+interface Subscription {
+  id: string;
+  status: string;
+  billing_cycle: string;
+  trial_ends_at: string | null;
+  current_period_end: string | null;
+  subscription_plans: { name: string; price_monthly: number; price_yearly: number; features: string[]; max_students: number | null; max_teachers: number | null } | null;
+}
+
+interface Invoice {
+  id: string;
+  invoice_number: string;
+  amount: number;
+  currency: string;
+  status: string;
+  due_date: string | null;
+  paid_at: string | null;
+  created_at: string;
+}
+
 export default function BillingSubscription() {
+  const { institution } = useTenant();
+  const { user } = useAuth();
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!institution) return;
+    fetchBillingData();
+  }, [institution]);
+
+  const fetchBillingData = async () => {
+    setLoading(true);
+    const [subRes, invRes] = await Promise.all([
+      supabase
+        .from("institution_subscriptions")
+        .select("*, subscription_plans!plan_id(name,price_monthly,price_yearly,features,max_students,max_teachers)")
+        .eq("institution_id", institution!.id)
+        .maybeSingle(),
+      supabase
+        .from("invoices")
+        .select("id,invoice_number,amount,currency,status,due_date,paid_at,created_at")
+        .eq("institution_id", institution!.id)
+        .order("created_at", { ascending: false }),
+    ]);
+    setSubscription(subRes.data as unknown as Subscription | null);
+    setInvoices((invRes.data || []) as Invoice[]);
+    setLoading(false);
+  };
+
+  const statusColor = (status: string) => {
+    switch (status) {
+      case "active": return "bg-accent/10 text-accent border-accent/20";
+      case "trial": return "bg-primary/10 text-primary border-primary/20";
+      case "past_due": return "bg-destructive/10 text-destructive border-destructive/20";
+      case "suspended": return "bg-destructive/10 text-destructive border-destructive/20";
+      case "cancelled": return "bg-muted text-muted-foreground border-border";
+      case "paid": return "bg-accent/10 text-accent border-accent/20";
+      case "overdue": return "bg-destructive/10 text-destructive border-destructive/20";
+      case "pending": return "bg-primary/10 text-primary border-primary/20";
+      default: return "bg-muted text-muted-foreground border-border";
+    }
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
+
+  const plan = subscription?.subscription_plans;
+
   return (
     <div className="p-6 lg:p-8 space-y-8">
       <div>
-        <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">
-          Billing & Subscription
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Manage your subscription plan and view payment history
-        </p>
+        <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">Billing & Subscription</h1>
+        <p className="text-muted-foreground mt-1">Manage your subscription plan and view payment history</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -35,100 +107,183 @@ export default function BillingSubscription() {
                 </CardTitle>
                 <CardDescription>Your active subscription details</CardDescription>
               </div>
-              <Badge className="bg-accent/10 text-accent border-accent/20" variant="outline">
-                Active
-              </Badge>
+              {subscription && (
+                <Badge variant="outline" className={statusColor(subscription.status)}>
+                  {subscription.status}
+                </Badge>
+              )}
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="p-4 rounded-xl bg-secondary/50 border border-border/50">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-display font-bold">Standard Plan</h3>
-                  <p className="text-sm text-muted-foreground">For growing institutions</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-display font-bold">—</p>
-                  <p className="text-xs text-muted-foreground">/ month</p>
-                </div>
+            {!subscription ? (
+              <div className="text-center py-8 space-y-3">
+                <Package className="h-10 w-10 mx-auto text-muted-foreground/30" />
+                <p className="text-sm font-medium">No active subscription</p>
+                <p className="text-xs text-muted-foreground">Contact the platform administrator to assign a subscription plan.</p>
               </div>
-
-              <Separator className="mb-4" />
-
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  "Up to 500 students",
-                  "50 teachers",
-                  "All academic modules",
-                  "Email & SMS",
-                  "WhatsApp messaging",
-                  "Priority support",
-                ].map((feature) => (
-                  <div key={feature} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
-                    <span>{feature}</span>
+            ) : (
+              <div className="p-4 rounded-xl bg-secondary/50 border border-border/50">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-display font-bold">{plan?.name || "Custom Plan"}</h3>
+                    <p className="text-sm text-muted-foreground capitalize">{subscription.billing_cycle} billing</p>
                   </div>
-                ))}
-              </div>
-            </div>
+                  {plan && (
+                    <div className="text-right">
+                      <p className="text-2xl font-display font-bold">
+                        ${subscription.billing_cycle === "yearly" ? plan.price_yearly : plan.price_monthly}
+                      </p>
+                      <p className="text-xs text-muted-foreground">/ {subscription.billing_cycle === "yearly" ? "year" : "month"}</p>
+                    </div>
+                  )}
+                </div>
 
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>Renewal: —</span>
+                {plan?.features && (
+                  <>
+                    <Separator className="mb-4" />
+                    <div className="grid grid-cols-2 gap-2">
+                      {(plan.features as string[]).map((feature: string) => (
+                        <div key={feature} className="flex items-center gap-2 text-sm">
+                          <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                <Separator className="my-4" />
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {plan?.max_students && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Max Students</p>
+                      <p className="font-medium">{plan.max_students.toLocaleString()}</p>
+                    </div>
+                  )}
+                  {plan?.max_teachers && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Max Teachers</p>
+                      <p className="font-medium">{plan.max_teachers.toLocaleString()}</p>
+                    </div>
+                  )}
+                  {subscription.trial_ends_at && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Trial Ends</p>
+                      <p className="font-medium">{new Date(subscription.trial_ends_at).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {subscription.current_period_end && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Next Renewal</p>
+                      <p className="font-medium">{new Date(subscription.current_period_end).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-              <Button variant="outline" size="sm">
-                Upgrade Plan
-              </Button>
-            </div>
+            )}
+
+            {subscription?.status === "suspended" && (
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-destructive">Account Suspended</p>
+                  <p className="text-xs text-muted-foreground mt-1">Your account has been suspended. Please contact the platform administrator to resolve any outstanding issues.</p>
+                </div>
+              </div>
+            )}
+
+            {subscription?.status === "past_due" && (
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-destructive">Payment Overdue</p>
+                  <p className="text-xs text-muted-foreground mt-1">You have an overdue invoice. Please settle the payment to avoid service interruption.</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Payment Method */}
+        {/* Subscription Info */}
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-lg font-display flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-accent" />
-              Payment Method
+              <Calendar className="h-5 w-5 text-accent" />
+              Billing Summary
             </CardTitle>
-            <CardDescription>Bank transfer details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 rounded-xl bg-secondary/50 border border-border/50 space-y-3">
-              <div>
-                <p className="text-xs text-muted-foreground">Payment Method</p>
-                <p className="text-sm font-medium">Bank Transfer</p>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Total Invoices</span>
+                <span className="font-medium">{invoices.length}</span>
               </div>
-              <Separator />
-              <div>
-                <p className="text-xs text-muted-foreground">Account Status</p>
-                <Badge variant="outline" className="mt-1 bg-accent/10 text-accent border-accent/20">
-                  Verified
-                </Badge>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Paid</span>
+                <span className="font-medium text-accent">{invoices.filter((i) => i.status === "paid").length}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Pending</span>
+                <span className="font-medium text-primary">{invoices.filter((i) => i.status === "pending").length}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Overdue</span>
+                <span className="font-medium text-destructive">{invoices.filter((i) => i.status === "overdue").length}</span>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="w-full">
-              Update Payment Method
-            </Button>
+            <Separator />
+            <div className="flex justify-between text-sm font-semibold">
+              <span>Total Paid</span>
+              <span className="text-accent">
+                ${invoices.filter((i) => i.status === "paid").reduce((s, i) => s + Number(i.amount), 0).toLocaleString()}
+              </span>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Payment History */}
+      {/* Invoice History */}
       <Card className="border-border/50">
         <CardHeader>
           <CardTitle className="text-lg font-display flex items-center gap-2">
             <Receipt className="h-5 w-5 text-primary" />
-            Payment History
+            Invoice History
           </CardTitle>
           <CardDescription>View past payments and download invoices</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-            <Receipt className="h-10 w-10 mb-3 opacity-30" />
-            <p className="text-sm font-medium">No payment history</p>
-            <p className="text-xs mt-1">Invoices and payment records will appear here</p>
-          </div>
+          {invoices.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Receipt className="h-10 w-10 mb-3 opacity-30" />
+              <p className="text-sm font-medium">No invoices yet</p>
+              <p className="text-xs mt-1">Invoices will appear here when generated by the platform</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {invoices.map((inv) => (
+                <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card/30">
+                  <div className="flex items-center gap-3">
+                    <Receipt className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-mono font-medium">{inv.invoice_number}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Issued: {new Date(inv.created_at).toLocaleDateString()}
+                        {inv.due_date && ` · Due: ${new Date(inv.due_date).toLocaleDateString()}`}
+                        {inv.paid_at && ` · Paid: ${new Date(inv.paid_at).toLocaleDateString()}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <p className="font-semibold text-sm">${Number(inv.amount).toLocaleString()} {inv.currency}</p>
+                    <Badge variant="outline" className={statusColor(inv.status)}>{inv.status}</Badge>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

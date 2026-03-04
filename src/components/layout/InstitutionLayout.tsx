@@ -97,6 +97,13 @@ const teacherNavSections = [
   },
 ];
 
+const parentNavSections = [
+  {
+    label: "Overview",
+    items: [{ href: "/parent", label: "My Children", icon: LayoutDashboard }],
+  },
+];
+
 const studentNavSections = [
   {
     label: "Overview",
@@ -230,7 +237,7 @@ export default function InstitutionLayout() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-4">
-          {(membership?.role === "student" ? studentNavSections : membership?.role === "teacher" ? teacherNavSections : adminNavSections).map((section) => (
+          {(membership?.role === "student" ? studentNavSections : membership?.role === "teacher" ? teacherNavSections : membership?.role === "parent" ? parentNavSections : adminNavSections).map((section) => (
             <div key={section.label}>
               {!collapsed && (
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1.5">

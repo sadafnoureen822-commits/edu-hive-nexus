@@ -15,6 +15,7 @@ import InstitutionsPage from "./pages/admin/Institutions";
 import InstitutionDetail from "./pages/admin/InstitutionDetail";
 import DomainsPage from "./pages/admin/Domains";
 import MembersPage from "./pages/admin/Members";
+import BillingDashboard from "./pages/admin/BillingDashboard";
 import InstitutionLayout from "./components/layout/InstitutionLayout";
 import InstitutionOverview from "./pages/institution/InstitutionOverview";
 import InstitutionProfile from "./pages/institution/InstitutionProfile";
@@ -36,7 +37,9 @@ import CertificatesPage from "./pages/institution/lms/CertificatesPage";
 import AttendancePage from "./pages/institution/AttendancePage";
 import StudentDashboard from "./pages/institution/portals/StudentDashboard";
 import TeacherDashboard from "./pages/institution/portals/TeacherDashboard";
+import ParentDashboard from "./pages/institution/portals/ParentDashboard";
 import PublicSite from "./pages/public/PublicSite";
+import CertificateVerification from "./pages/public/CertificateVerification";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +69,7 @@ const App = () => (
               <Route path="institutions/:id" element={<InstitutionDetail />} />
               <Route path="domains" element={<DomainsPage />} />
               <Route path="members" element={<MembersPage />} />
+              <Route path="billing" element={<BillingDashboard />} />
             </Route>
 
             {/* Institution admin routes (tenant) */}
@@ -100,10 +104,14 @@ const App = () => (
               {/* Role Portals */}
               <Route path="student" element={<StudentDashboard />} />
               <Route path="teacher" element={<TeacherDashboard />} />
+              <Route path="parent" element={<ParentDashboard />} />
             </Route>
 
             {/* Public institution website */}
             <Route path="/site/:slug/*" element={<PublicSite />} />
+
+            {/* Certificate Verification */}
+            <Route path="/verify" element={<CertificateVerification />} />
 
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
