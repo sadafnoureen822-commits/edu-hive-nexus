@@ -150,13 +150,13 @@ export default function BillingDashboard() {
 
   const statusColor = (status: string) => {
     switch (status) {
-      case "active": return "bg-green-500/10 text-green-600 border-green-500/20";
-      case "trial": return "bg-blue-500/10 text-blue-600 border-blue-500/20";
-      case "past_due": return "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
+      case "active": return "bg-accent/10 text-accent border-accent/20";
+      case "trial": return "bg-primary/10 text-primary border-primary/20";
+      case "past_due": return "bg-destructive/10 text-destructive border-destructive/20";
       case "suspended": return "bg-destructive/10 text-destructive border-destructive/20";
-      case "paid": return "bg-green-500/10 text-green-600 border-green-500/20";
+      case "paid": return "bg-accent/10 text-accent border-accent/20";
       case "overdue": return "bg-destructive/10 text-destructive border-destructive/20";
-      case "pending": return "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
+      case "pending": return "bg-primary/10 text-primary border-primary/20";
       default: return "bg-muted text-muted-foreground border-border";
     }
   };
