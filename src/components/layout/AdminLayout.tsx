@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   Shield,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ const navItems = [
   { href: "/admin/institutions", label: "Institutions", icon: Building2 },
   { href: "/admin/domains", label: "Domains", icon: Globe },
   { href: "/admin/members", label: "Members", icon: Users },
+  { href: "/admin/billing", label: "Billing & Revenue", icon: CreditCard },
 ];
 
 export default function AdminLayout() {

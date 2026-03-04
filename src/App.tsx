@@ -15,6 +15,7 @@ import InstitutionsPage from "./pages/admin/Institutions";
 import InstitutionDetail from "./pages/admin/InstitutionDetail";
 import DomainsPage from "./pages/admin/Domains";
 import MembersPage from "./pages/admin/Members";
+import BillingDashboard from "./pages/admin/BillingDashboard";
 import InstitutionLayout from "./components/layout/InstitutionLayout";
 import InstitutionOverview from "./pages/institution/InstitutionOverview";
 import InstitutionProfile from "./pages/institution/InstitutionProfile";
