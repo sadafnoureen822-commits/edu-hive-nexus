@@ -1338,6 +1338,72 @@ export type Database = {
           },
         ]
       }
+      institution_subscriptions: {
+        Row: {
+          billing_cycle: string
+          cancelled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          institution_id: string
+          notes: string | null
+          plan_id: string | null
+          status: string
+          suspended_at: string | null
+          suspension_reason: string | null
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: string
+          cancelled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          institution_id: string
+          notes?: string | null
+          plan_id?: string | null
+          status?: string
+          suspended_at?: string | null
+          suspension_reason?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: string
+          cancelled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          institution_id?: string
+          notes?: string | null
+          plan_id?: string | null
+          status?: string
+          suspended_at?: string | null
+          suspension_reason?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "institution_subscriptions_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: true
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "institution_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       institutions: {
         Row: {
           created_at: string
@@ -1367,6 +1433,75 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount: number
+          billing_period_end: string | null
+          billing_period_start: string | null
+          created_at: string
+          currency: string
+          due_date: string | null
+          id: string
+          institution_id: string
+          invoice_number: string
+          line_items: Json | null
+          notes: string | null
+          paid_at: string | null
+          status: string
+          subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          billing_period_end?: string | null
+          billing_period_start?: string | null
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          institution_id: string
+          invoice_number: string
+          line_items?: Json | null
+          notes?: string | null
+          paid_at?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          billing_period_end?: string | null
+          billing_period_start?: string | null
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          institution_id?: string
+          invoice_number?: string
+          line_items?: Json | null
+          notes?: string | null
+          paid_at?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "institution_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       issued_certificates: {
         Row: {
@@ -1457,6 +1592,101 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "course_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parent_student_links: {
+        Row: {
+          created_at: string
+          id: string
+          institution_id: string
+          parent_user_id: string
+          relationship: string | null
+          student_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          institution_id: string
+          parent_user_id: string
+          relationship?: string | null
+          student_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          institution_id?: string
+          parent_user_id?: string
+          relationship?: string | null
+          student_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_student_links_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          institution_id: string
+          invoice_id: string | null
+          notes: string | null
+          paid_at: string | null
+          payment_method: string | null
+          recorded_by: string | null
+          status: string
+          transaction_reference: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          institution_id: string
+          invoice_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          recorded_by?: string | null
+          status?: string
+          transaction_reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          institution_id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          recorded_by?: string | null
+          status?: string
+          transaction_reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]
@@ -1954,6 +2184,57 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          features: Json
+          id: string
+          is_active: boolean
+          is_trial: boolean
+          max_storage_gb: number | null
+          max_students: number | null
+          max_teachers: number | null
+          name: string
+          price_monthly: number
+          price_yearly: number
+          trial_days: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_trial?: boolean
+          max_storage_gb?: number | null
+          max_students?: number | null
+          max_teachers?: number | null
+          name: string
+          price_monthly?: number
+          price_yearly?: number
+          trial_days?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_trial?: boolean
+          max_storage_gb?: number | null
+          max_students?: number | null
+          max_teachers?: number | null
+          name?: string
+          price_monthly?: number
+          price_yearly?: number
+          trial_days?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       whatsapp_logs: {
         Row: {
           audience: string | null
@@ -2019,6 +2300,10 @@ export type Database = {
       }
       generate_certificate_serial: {
         Args: { institution_id: string; template_type: string }
+        Returns: string
+      }
+      generate_invoice_number: {
+        Args: { p_institution_id: string }
         Returns: string
       }
       get_user_institution_ids: {
