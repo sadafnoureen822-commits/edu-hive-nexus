@@ -234,7 +234,7 @@ export default function BillingSubscription() {
             <Separator />
             <div className="flex justify-between text-sm font-semibold">
               <span>Total Paid</span>
-              <span className="text-green-600">
+              <span className="text-accent">
                 ${invoices.filter((i) => i.status === "paid").reduce((s, i) => s + Number(i.amount), 0).toLocaleString()}
               </span>
             </div>
