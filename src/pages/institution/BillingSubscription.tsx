@@ -193,10 +193,10 @@ export default function BillingSubscription() {
             )}
 
             {subscription?.status === "past_due" && (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
-                <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-yellow-600">Payment Overdue</p>
+                  <p className="text-sm font-medium text-destructive">Payment Overdue</p>
                   <p className="text-xs text-muted-foreground mt-1">You have an overdue invoice. Please settle the payment to avoid service interruption.</p>
                 </div>
               </div>

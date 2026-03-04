@@ -299,7 +299,7 @@ export default function BillingDashboard() {
                           <Button size="sm" variant="outline" className="text-destructive border-destructive/20 hover:bg-destructive/10" onClick={() => updateSubscriptionStatus(sub.id, "suspended")}>Suspend</Button>
                         )}
                         {sub.status === "suspended" && (
-                          <Button size="sm" variant="outline" className="text-green-600 border-green-500/20 hover:bg-green-500/10" onClick={() => updateSubscriptionStatus(sub.id, "active")}>Reactivate</Button>
+                          <Button size="sm" variant="outline" className="text-accent border-accent/20 hover:bg-accent/10" onClick={() => updateSubscriptionStatus(sub.id, "active")}>Reactivate</Button>
                         )}
                       </div>
                     </div>
