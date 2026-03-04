@@ -104,10 +104,14 @@ const App = () => (
               {/* Role Portals */}
               <Route path="student" element={<StudentDashboard />} />
               <Route path="teacher" element={<TeacherDashboard />} />
+              <Route path="parent" element={<ParentDashboard />} />
             </Route>
 
             {/* Public institution website */}
             <Route path="/site/:slug/*" element={<PublicSite />} />
+
+            {/* Certificate Verification */}
+            <Route path="/verify" element={<CertificateVerification />} />
 
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />

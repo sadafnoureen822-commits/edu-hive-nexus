@@ -97,6 +97,13 @@ const teacherNavSections = [
   },
 ];
 
+const parentNavSections = [
+  {
+    label: "Overview",
+    items: [{ href: "/parent", label: "My Children", icon: LayoutDashboard }],
+  },
+];
+
 const studentNavSections = [
   {
     label: "Overview",
