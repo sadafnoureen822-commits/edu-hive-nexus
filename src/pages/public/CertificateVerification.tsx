@@ -182,7 +182,7 @@ export default function CertificateVerification() {
                       {result.certificate.is_revoked ? (
                         <Badge variant="destructive">Revoked</Badge>
                       ) : (
-                        <Badge className="bg-green-500/10 text-green-600 border-green-500/20" variant="outline">Valid & Active</Badge>
+                        <Badge className="bg-accent/10 text-accent border-accent/20" variant="outline">Valid & Active</Badge>
                       )}
                     </div>
                   </div>
