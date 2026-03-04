@@ -37,7 +37,9 @@ import CertificatesPage from "./pages/institution/lms/CertificatesPage";
 import AttendancePage from "./pages/institution/AttendancePage";
 import StudentDashboard from "./pages/institution/portals/StudentDashboard";
 import TeacherDashboard from "./pages/institution/portals/TeacherDashboard";
+import ParentDashboard from "./pages/institution/portals/ParentDashboard";
 import PublicSite from "./pages/public/PublicSite";
+import CertificateVerification from "./pages/public/CertificateVerification";
 
 const queryClient = new QueryClient();
 
