@@ -220,11 +220,11 @@ export default function BillingSubscription() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Paid</span>
-                <span className="font-medium text-green-600">{invoices.filter((i) => i.status === "paid").length}</span>
+                <span className="font-medium text-accent">{invoices.filter((i) => i.status === "paid").length}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Pending</span>
-                <span className="font-medium text-yellow-600">{invoices.filter((i) => i.status === "pending").length}</span>
+                <span className="font-medium text-primary">{invoices.filter((i) => i.status === "pending").length}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Overdue</span>
