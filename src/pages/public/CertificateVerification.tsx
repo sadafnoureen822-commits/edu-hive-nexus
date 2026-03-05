@@ -44,29 +44,39 @@ export default function CertificateVerification() {
     setLoading(true);
     setResult(null);
 
-    const { data, error } = await supabase
-      .from("issued_certificates")
-      .select(`
-        id, serial_number, issued_at, is_revoked, certificate_data,
-        certificate_templates!template_id(name, template_type),
-        institutions!institution_id(name, logo_url)
-      `)
-      .eq("serial_number", serial.trim().toUpperCase())
-      .maybeSingle();
+    try {
+      // Step 1: fetch the certificate
+      const { data: cert, error: certError } = await supabase
+        .from("issued_certificates")
+        .select("id, serial_number, issued_at, is_revoked, certificate_data, template_id, institution_id")
+        .eq("serial_number", serial.trim().toUpperCase())
+        .eq("is_revoked", false)
+        .maybeSingle();
+
+      if (certError || !cert) {
+        setResult({ valid: false, error: "Certificate not found. Please check the serial number and ensure it is valid." });
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: fetch template and institution in parallel
+      const [templateRes, instRes] = await Promise.all([
+        supabase.from("certificate_templates").select("name, template_type").eq("id", cert.template_id).maybeSingle(),
+        supabase.from("institutions").select("name, logo_url").eq("id", cert.institution_id).maybeSingle(),
+      ]);
+
+      const certificate = {
+        ...cert,
+        template: templateRes.data ?? undefined,
+        institution: instRes.data ?? undefined,
+      };
+
+      setResult({ valid: true, certificate: certificate as VerificationResult["certificate"] });
+    } catch {
+      setResult({ valid: false, error: "An error occurred during verification. Please try again." });
+    }
 
     setLoading(false);
-
-    if (error || !data) {
-      setResult({ valid: false, error: "Certificate not found. Please check the serial number." });
-      return;
-    }
-
-    if (data.is_revoked) {
-      setResult({ valid: false, error: "This certificate has been revoked by the issuing institution.", certificate: data as VerificationResult["certificate"] });
-      return;
-    }
-
-    setResult({ valid: true, certificate: data as VerificationResult["certificate"] });
   };
 
   return (
