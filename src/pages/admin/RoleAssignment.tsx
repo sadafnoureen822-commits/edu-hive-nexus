@@ -139,6 +139,16 @@ export default function RoleAssignmentPage() {
     },
   });
 
+  const { data: emailMap = {} } = useQuery({
+    queryKey: ["admin-user-emails"],
+    queryFn: async () => {
+      const res = await supabase.functions.invoke("admin-list-users");
+      if (res.error) return {};
+      const users = (res.data as any)?.users ?? [];
+      return Object.fromEntries(users.map((u: any) => [u.id, u.email])) as Record<string, string>;
+    },
+  });
+
   // ── Mutations ─────────────────────────────────────────────────────────────
   const assignMutation = useMutation({
     mutationFn: async ({ userId, institutionId, role }: { userId: string; institutionId: string; role: string }) => {
