@@ -129,13 +129,10 @@ const App = () => (
               <Route path="parent" element={<ParentDashboard />} />
             </Route>
 
-            {/* Public institution website */}
+            {/* Marks & Results under institution */}
             <Route path="/site/:slug/*" element={<PublicSite />} />
-
-            {/* Certificate Verification */}
             <Route path="/verify" element={<CertificateVerification />} />
-
-            {/* Catch-all */}
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
