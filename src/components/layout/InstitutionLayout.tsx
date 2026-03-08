@@ -5,30 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  GraduationCap,
-  ClipboardList,
-  MessageSquare,
-  CreditCard,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Shield,
-  Globe,
-  FileText,
-  Menu,
-  Image,
-  Palette,
-  BookOpen,
-  PenSquare,
-  HelpCircle,
-  Award,
-  CalendarCheck,
-  UserCheck,
+  LayoutDashboard, Building2, Users, GraduationCap, ClipboardList,
+  MessageSquare, CreditCard, Settings, LogOut, ChevronLeft, ChevronRight,
+  Loader2, Shield, Globe, FileText, Menu, Image, Palette, BookOpen,
+  PenSquare, HelpCircle, Award, CalendarCheck, UserCheck, Clock,
+  DollarSign, Megaphone, Bell, Activity, TrendingUp, Key, ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
