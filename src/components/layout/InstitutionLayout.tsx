@@ -325,7 +325,7 @@ export default function InstitutionLayout() {
             variant="ghost"
             size="sm"
             className={cn("w-full gap-2 text-muted-foreground", collapsed ? "justify-center px-0" : "justify-start")}
-            onClick={signOut}
+            onClick={handleSignOut}
             title="Sign Out"
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />
