@@ -148,6 +148,7 @@ export default function Auth() {
     if (role === "student") navigate(`/${slug}/student`, { replace: true });
     else if (role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
     else if (role === "parent") navigate(`/${slug}/parent`, { replace: true });
+    else if (role === "principal") navigate(`/${slug}/principal`, { replace: true });
     else navigate(`/${slug}`, { replace: true });
   };
 

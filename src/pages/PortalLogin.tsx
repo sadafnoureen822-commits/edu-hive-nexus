@@ -223,7 +223,8 @@ export default function PortalLogin() {
       await supabase.auth.signOut();
       const actualRole = memberships[0].role;
       const portalForRole: Record<string, string> = {
-        admin: "/admin/login", principal: "/admin/login", exam_controller: "/admin/login",
+        admin: "/admin/login", exam_controller: "/admin/login",
+        principal: "/principal/login",
         teacher: "/teacher/login", student: "/student/login", parent: "/parent/login",
       };
       toast({
