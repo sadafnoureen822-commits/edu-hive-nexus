@@ -188,7 +188,7 @@ export default function PrincipalDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{teachers.length} teacher{teachers.length !== 1 ? "s" : ""}</p>
             <div className="flex gap-2">
-              <ExportButton data={teacherSummary.map((t) => ({ Name: t.full_name ?? "", Courses: t.courseCount, Assignments: t.assignmentCount, Joined: t.created_at }))} fileName="teaching-staff" sheetName="Teachers" />
+              <AIDataExport contextData={teacherSummary.map((t) => ({ Name: t.full_name ?? "", Courses: t.courseCount, Assignments: t.assignmentCount, Joined: t.created_at }))} label="Export" exportTitle="Teaching Staff" fileName="teaching-staff" />
               <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/users")}>
                 Manage Staff <ArrowRight className="h-3 w-3" />
               </Button>
