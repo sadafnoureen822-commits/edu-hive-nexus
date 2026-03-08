@@ -146,6 +146,11 @@ export default function InstitutionLayout() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth", { replace: true });
+  };
+
   const role = membership?.role ?? null;
 
   // Auto-redirect to the correct home page for the role
@@ -320,7 +325,7 @@ export default function InstitutionLayout() {
             variant="ghost"
             size="sm"
             className={cn("w-full gap-2 text-muted-foreground", collapsed ? "justify-center px-0" : "justify-start")}
-            onClick={signOut}
+            onClick={handleSignOut}
             title="Sign Out"
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />

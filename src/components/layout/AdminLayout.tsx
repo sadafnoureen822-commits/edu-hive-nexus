@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +23,12 @@ const navItems = [
 export default function AdminLayout() {
   const { user, signOut, isPlatformAdmin } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth", { replace: true });
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -70,7 +76,7 @@ export default function AdminLayout() {
           <Button
             variant="ghost"
             className="w-full justify-start gap-2 text-muted-foreground"
-            onClick={signOut}
+            onClick={handleSignOut}
           >
             <LogOut className="h-4 w-4" />
             Sign Out
