@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, ClipboardList, Edit, Trash2, Loader2, CheckCircle2, Clock, FileText, Star } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function TeacherAssignmentsPage() {
   const { institution } = useTenant();

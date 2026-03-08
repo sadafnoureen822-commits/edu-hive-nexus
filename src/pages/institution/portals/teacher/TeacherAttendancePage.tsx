@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CalendarCheck, Save, CheckCircle2, Clock, AlertCircle, Circle, Users, BarChart3, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 type AttStatus = "present" | "absent" | "late" | "excused";
 

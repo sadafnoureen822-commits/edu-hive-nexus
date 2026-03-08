@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, BookOpen, Edit, Trash2, ChevronRight, Video, FileText, Clock, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function TeacherCoursesPage() {
   const { institution } = useTenant();

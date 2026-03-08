@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Save, Loader2, ClipboardList, Users, BookOpen } from "lucide-react";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function TeacherMarksPage() {
   const { institution } = useTenant();
