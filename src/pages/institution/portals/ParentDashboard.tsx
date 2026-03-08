@@ -121,17 +121,30 @@ export default function ParentDashboard() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <div className="bg-rose-500/10 p-1.5 rounded-lg">
-            <HeartHandshake className="h-4 w-4 text-rose-500" />
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-rose-500/10 p-1.5 rounded-lg">
+              <HeartHandshake className="h-4 w-4 text-rose-500" />
+            </div>
+            <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[10px]">Parent Portal</Badge>
           </div>
-          <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[10px]">Parent Portal</Badge>
+          <h1 className="text-2xl font-display font-bold text-foreground">
+            Welcome, {user?.user_metadata?.full_name?.split(" ")[0] || "Parent"} 👋
+          </h1>
+          <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
-        <h1 className="text-2xl font-display font-bold text-foreground">
-          Welcome, {user?.user_metadata?.full_name?.split(" ")[0] || "Parent"} 👋
-        </h1>
-        <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
+        <ExportButton
+          data={[
+            ...(attendance?.recent ?? []).map((a) => ({ Section: "Attendance", Date: a.date, Status: a.status })),
+            ...marks.map((m, i) => ({ Section: "Results", "#": i + 1, Score: m.total_marks ?? "", Status: m.status, Remarks: m.remarks ?? "" })),
+            ...enrollments.map((e) => ({ Section: "Courses", Title: e.title, Status: e.status })),
+            ...certs.map((c) => ({ Section: "Certificates", Serial: c.serial_number, "Issued At": c.issued_at, Template: c.template })),
+          ]}
+          fileName={`parent-portal-${currentChild?.fullName ?? "child"}-full-export`}
+          sheetName="Child Report"
+          label="Download All"
+        />
       </div>
 
       {/* No children linked */}
