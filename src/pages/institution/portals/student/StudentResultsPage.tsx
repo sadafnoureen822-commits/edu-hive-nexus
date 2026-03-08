@@ -92,9 +92,29 @@ export default function StudentResultsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Exam Results</h1>
-        <p className="text-sm text-muted-foreground">Your approved exam results</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Exam Results</h1>
+          <p className="text-sm text-muted-foreground">Your approved exam results</p>
+        </div>
+        <ExportButton
+          data={displayResults.flatMap((r) =>
+            r.subjects.map((s) => ({
+              Exam: r.examName,
+              Subject: s.subjectName,
+              "Theory Marks": s.theoryMarks,
+              "Practical Marks": s.practicalMarks,
+              "Viva Marks": s.vivaMarks,
+              "Total Obtained": s.totalObtained,
+              "Total Marks": s.totalMarks,
+              "Passing Marks": s.passingMarks,
+              Absent: s.isAbsent ? "Yes" : "No",
+              Status: s.totalObtained >= s.passingMarks && !s.isAbsent ? "Pass" : "Fail",
+            }))
+          )}
+          fileName="exam-results"
+          sheetName="Results"
+        />
       </div>
 
       {results.length === 0 ? (

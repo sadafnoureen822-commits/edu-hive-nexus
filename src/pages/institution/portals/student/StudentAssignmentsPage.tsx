@@ -70,9 +70,23 @@ export default function StudentAssignmentsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Assignments</h1>
-        <p className="text-sm text-muted-foreground">{active.length} active assignment{active.length !== 1 ? "s" : ""}</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Assignments</h1>
+          <p className="text-sm text-muted-foreground">{active.length} active assignment{active.length !== 1 ? "s" : ""}</p>
+        </div>
+        <ExportButton
+          data={active.map((a) => ({
+            Title: a.title,
+            Description: a.description ?? "",
+            "Total Marks": a.total_marks,
+            "Passing Marks": a.passing_marks,
+            "Due Date": a.due_date ?? "",
+            Submitted: submittedIds.has(a.id) ? "Yes" : "No",
+          }))}
+          fileName="my-assignments"
+          sheetName="Assignments"
+        />
       </div>
 
       {active.length === 0 ? (

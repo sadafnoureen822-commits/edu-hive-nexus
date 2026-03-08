@@ -47,9 +47,23 @@ export default function StudentQuizzesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Quizzes</h1>
-        <p className="text-sm text-muted-foreground">{published.length} quiz{published.length !== 1 ? "zes" : ""} available</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Quizzes</h1>
+          <p className="text-sm text-muted-foreground">{published.length} quiz{published.length !== 1 ? "zes" : ""} available</p>
+        </div>
+        <ExportButton
+          data={myAttempts.map((a: any) => ({
+            "Quiz ID": a.quiz_id,
+            Status: a.status,
+            "Marks Obtained": a.marks_obtained ?? "",
+            "Percentage (%)": a.percentage ?? "",
+            "Started At": a.started_at,
+            "Submitted At": a.submitted_at ?? "",
+          }))}
+          fileName="my-quiz-attempts"
+          sheetName="Quiz Attempts"
+        />
       </div>
 
       {published.length === 0 ? (
