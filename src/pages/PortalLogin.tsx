@@ -138,7 +138,17 @@ export default function PortalLogin() {
       },
     });
     if (error) {
-      toast({ title: "Signup failed", description: error.message, variant: "destructive" });
+      // User already exists — guide them to login instead
+      if (error.message.toLowerCase().includes("already registered") || error.status === 422) {
+        toast({
+          title: "Account already exists",
+          description: "This email is already registered. Please sign in instead.",
+          variant: "destructive",
+        });
+        switchMode("login");
+      } else {
+        toast({ title: "Signup failed", description: error.message, variant: "destructive" });
+      }
     } else {
       setSignupDone(true);
     }
