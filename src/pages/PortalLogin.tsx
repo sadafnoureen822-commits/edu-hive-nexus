@@ -545,18 +545,6 @@ export default function PortalLogin() {
               </div>
             )}
 
-            {/* Super Admin: no signup allowed */}
-            {!meta.allowSignup && mode === "login" && (
-              <div className="mt-4 p-3 rounded-xl bg-muted/40 border border-border/40">
-                <div className="flex items-start gap-2">
-                  <Shield className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Super Admin accounts are created directly by the platform team.
-                    Contact support if you need access.
-                  </p>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
