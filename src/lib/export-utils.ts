@@ -79,8 +79,6 @@ export async function exportToWord(
       bottom: { style: BorderStyle.SINGLE, size: 4, color: "e2e8f0" },
       left: { style: BorderStyle.SINGLE, size: 4, color: "e2e8f0" },
       right: { style: BorderStyle.SINGLE, size: 4, color: "e2e8f0" },
-      insideH: { style: BorderStyle.SINGLE, size: 2, color: "f1f5f9" },
-      insideV: { style: BorderStyle.SINGLE, size: 2, color: "f1f5f9" },
     },
   });
 
