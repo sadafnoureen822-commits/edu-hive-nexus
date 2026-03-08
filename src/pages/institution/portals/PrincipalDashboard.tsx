@@ -42,7 +42,7 @@ export default function PrincipalDashboard() {
   const presentToday = todayAtt.filter((a) => a.status === "present").length;
   const attPct = students.length > 0 ? Math.round((presentToday / students.length) * 100) : 0;
   const publishedCourses = courses.filter((c) => c.status === "published").length;
-  const activeExams = exams.filter((e) => e.status === "published" || e.status === "ongoing").length;
+  const activeExams = exams.filter((e) => e.status === "active" || e.status === "scheduled").length;
   const approvedMarks = allMarks.filter((m) => m.status === "approved");
   const avgScore = approvedMarks.length > 0
     ? Math.round(approvedMarks.reduce((acc, m) => acc + (m.total_marks || 0), 0) / approvedMarks.length)
