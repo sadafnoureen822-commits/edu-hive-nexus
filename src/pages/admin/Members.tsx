@@ -82,9 +82,11 @@ export default function MembersPage() {
   // ── Fetch emails from edge function ─────────────────────────────────────────
   const { data: emailMap = {} } = useQuery({
     queryKey: ["admin-user-emails"],
+    staleTime: 0,
+    retry: 2,
     queryFn: async () => {
       const res = await supabase.functions.invoke("admin-list-users");
-      if (res.error) return {};
+      if (res.error) throw new Error(res.error.message ?? "Failed to fetch emails");
       const users = (res.data as any)?.users ?? [];
       return Object.fromEntries(users.map((u: any) => [u.id, u.email])) as Record<string, string>;
     },
