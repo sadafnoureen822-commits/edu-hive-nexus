@@ -13,34 +13,54 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Users, GraduationCap, UserCheck, UserPlus, Search,
   MoreHorizontal, Shield, BookUser, Trash2, Loader2, Mail,
+  Eye, EyeOff, User, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Enums } from "@/integrations/supabase/types";
 
+// ── Constants ────────────────────────────────────────────────────────────────
 const ROLE_COLORS: Record<string, string> = {
-  admin: "bg-primary/10 text-primary border-primary/20",
-  teacher: "bg-accent/10 text-accent border-accent/20",
-  student: "bg-green-500/10 text-green-700 border-green-200",
-  parent: "bg-orange-500/10 text-orange-700 border-orange-200",
-  staff: "bg-muted text-muted-foreground border-border",
+  admin:           "bg-primary/10 text-primary border-primary/20",
+  teacher:         "bg-violet-500/10 text-violet-700 border-violet-200",
+  student:         "bg-green-500/10 text-green-700 border-green-200",
+  parent:          "bg-orange-500/10 text-orange-700 border-orange-200",
+  principal:       "bg-blue-500/10 text-blue-700 border-blue-200",
+  exam_controller: "bg-rose-500/10 text-rose-700 border-rose-200",
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  admin:           "Admin",
+  teacher:         "Teacher",
+  student:         "Student",
+  parent:          "Parent",
+  principal:       "Principal",
+  exam_controller: "Exam Controller",
 };
 
 type InstitutionRole = Enums<"institution_role">;
-const ALL_ROLES: InstitutionRole[] = ["admin", "teacher", "student", "parent", "principal", "exam_controller"];
+const ALL_ROLES: InstitutionRole[] = [
+  "teacher", "student", "parent", "principal", "exam_controller", "admin",
+];
 
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function UserManagement() {
   const { institution } = useTenant();
   const { user } = useAuth();
@@ -51,12 +71,23 @@ export default function UserManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
-  // Invite dialog
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<InstitutionRole>("student");
-  const [inviteLoading, setInviteLoading] = useState(false);
+  // Create / Edit dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"create" | "edit-role">("create");
+  const [editMemberId, setEditMemberId] = useState<string>("");
 
+  // Form fields
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<InstitutionRole>("student");
+  const [formLoading, setFormLoading] = useState(false);
+
+  // Delete confirm
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+
+  // ── Filtering ────────────────────────────────────────────────────────────
   const filtered = allMembers.filter((m) => {
     const matchesRole = activeTab === "all" || m.role === activeTab;
     const q = searchQuery.toLowerCase();
@@ -67,28 +98,54 @@ export default function UserManagement() {
     return matchesRole && matchesSearch;
   });
 
-  const countByRole = (...roles: string[]) => allMembers.filter((m) => roles.includes(m.role)).length;
+  const countByRole = (...roles: string[]) =>
+    allMembers.filter((m) => roles.includes(m.role)).length;
 
-  const handleInvite = async () => {
-    if (!inviteEmail.trim()) return toast.error("Email required");
+  // ── Open dialog helpers ───────────────────────────────────────────────────
+  const openCreate = () => {
+    setDialogMode("create");
+    setFullName(""); setEmail(""); setPassword("");
+    setSelectedRole("student"); setShowPassword(false);
+    setDialogOpen(true);
+  };
+
+  const openEditRole = (memberId: string, currentRole: InstitutionRole) => {
+    setDialogMode("edit-role");
+    setEditMemberId(memberId);
+    setSelectedRole(currentRole);
+    setDialogOpen(true);
+  };
+
+  // ── Create user ───────────────────────────────────────────────────────────
+  const handleCreateUser = async () => {
+    if (!fullName.trim()) return toast.error("Full name is required");
+    if (!email.trim()) return toast.error("Email is required");
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(inviteEmail.trim())) return toast.error("Please enter a valid email address");
-    setInviteLoading(true);
+    if (!emailRegex.test(email.trim())) return toast.error("Enter a valid email address");
+    if (password && password.length < 6) return toast.error("Password must be at least 6 characters");
 
+    setFormLoading(true);
     try {
-      // Sign up the user with a random password — they'll reset it via email
+      // Sign up new user
+      const pwd = password || Math.random().toString(36).slice(-8) + "Aa1!";
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: inviteEmail.trim().toLowerCase(),
-        password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase() + "1!",
-        options: { data: { invited_by: user?.id } },
+        email: email.trim().toLowerCase(),
+        password: pwd,
+        options: {
+          data: { full_name: fullName.trim(), invited_by: user?.id },
+        },
       });
 
       if (signUpError) {
-        // If user already exists, Supabase returns "User already registered"
-        if (signUpError.message.toLowerCase().includes("already registered") || signUpError.message.toLowerCase().includes("already exists")) {
-          toast.warning("This email is already registered. Ask the user to log in — they can be added via their user ID once they've signed in.", { duration: 6000 });
-          setInviteOpen(false);
-          setInviteLoading(false);
+        if (
+          signUpError.message.toLowerCase().includes("already registered") ||
+          signUpError.message.toLowerCase().includes("already exists")
+        ) {
+          toast.warning(
+            "This email is already registered. Use the role assignment to add an existing user.",
+            { duration: 6000 }
+          );
+          setDialogOpen(false);
           return;
         }
         throw signUpError;
@@ -97,47 +154,77 @@ export default function UserManagement() {
       const userId = signUpData?.user?.id;
       if (!userId) {
         toast.warning("User may already be registered. Ask them to sign in first.");
-        setInviteOpen(false);
-        setInviteLoading(false);
+        setDialogOpen(false);
         return;
       }
 
+      // Upsert profile with full_name
+      await supabase.from("profiles").upsert(
+        { user_id: userId, full_name: fullName.trim() },
+        { onConflict: "user_id" }
+      );
+
       // Check if already a member
-      const { data: existingMember } = await supabase
+      const { data: existing } = await supabase
         .from("institution_members")
         .select("id")
         .eq("institution_id", institutionId)
         .eq("user_id", userId)
         .maybeSingle();
 
-      if (existingMember) {
-        toast.warning("This user is already a member of this institution.");
-        setInviteOpen(false);
-        setInviteLoading(false);
-        return;
+      if (existing) {
+        // Update role
+        const { error } = await supabase
+          .from("institution_members")
+          .update({ role: selectedRole })
+          .eq("id", existing.id);
+        if (error) throw error;
+        toast.success(`User already existed — role updated to ${ROLE_LABELS[selectedRole]}.`);
+      } else {
+        // Add to institution
+        const { error: memberError } = await supabase
+          .from("institution_members")
+          .insert({
+            institution_id: institutionId,
+            user_id: userId,
+            role: selectedRole,
+            invited_by: user?.id,
+          });
+        if (memberError) throw memberError;
+        toast.success(
+          `${fullName.trim()} created as ${ROLE_LABELS[selectedRole]}!${!password ? " A password reset email will be sent." : ""}`
+        );
       }
 
-      // Add to institution_members
-      const { error: memberError } = await supabase.from("institution_members").insert({
-        institution_id: institutionId,
-        user_id: userId,
-        role: inviteRole,
-        invited_by: user?.id,
-      });
-
-      if (memberError) throw memberError;
-
-      toast.success(`${inviteRole.charAt(0).toUpperCase() + inviteRole.slice(1)} invited successfully! A confirmation email has been sent.`);
       qc.invalidateQueries({ queryKey: ["institution-members", institutionId] });
-      setInviteOpen(false);
-      setInviteEmail("");
+      setDialogOpen(false);
     } catch (err: any) {
-      toast.error(err.message || "Failed to invite user");
+      toast.error(err.message || "Failed to create user");
     } finally {
-      setInviteLoading(false);
+      setFormLoading(false);
     }
   };
 
+  // ── Edit role ─────────────────────────────────────────────────────────────
+  const handleEditRole = async () => {
+    setFormLoading(true);
+    try {
+      const { error } = await supabase
+        .from("institution_members")
+        .update({ role: selectedRole })
+        .eq("id", editMemberId);
+      if (error) throw error;
+      toast.success(`Role updated to ${ROLE_LABELS[selectedRole]}`);
+      qc.invalidateQueries({ queryKey: ["institution-members", institutionId] });
+      setDialogOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update role");
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  // ── Remove member ─────────────────────────────────────────────────────────
   const handleRemoveMember = async (memberId: string) => {
     const { error } = await supabase
       .from("institution_members")
@@ -146,85 +233,44 @@ export default function UserManagement() {
     if (error) return toast.error(error.message);
     toast.success("Member removed");
     qc.invalidateQueries({ queryKey: ["institution-members", institutionId] });
-  };
-
-  const handleChangeRole = async (memberId: string, newRole: InstitutionRole) => {
-    const { error } = await supabase
-      .from("institution_members")
-      .update({ role: newRole })
-      .eq("id", memberId);
-    if (error) return toast.error(error.message);
-    toast.success("Role updated");
-    qc.invalidateQueries({ queryKey: ["institution-members", institutionId] });
+    setDeleteTarget(null);
   };
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">User Management</h1>
-          <p className="text-muted-foreground mt-1">Manage teachers, students, parents, and staff</p>
+          <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">
+            User Management
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Create and manage teachers, students, principals, and parents
+          </p>
         </div>
-        <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2 self-start">
-              <UserPlus className="h-4 w-4" /> Invite User
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Invite New User</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="space-y-2">
-                <Label>Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="email"
-                    placeholder="user@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Role</Label>
-                <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as InstitutionRole)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ALL_ROLES.map((r) => (
-                      <SelectItem key={r} value={r} className="capitalize">{r}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="flex-1" onClick={() => setInviteOpen(false)}>
-                  Cancel
-                </Button>
-                <Button className="flex-1" onClick={handleInvite} disabled={inviteLoading}>
-                  {inviteLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Invite"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={openCreate} className="gap-2 self-start">
+          <UserPlus className="h-4 w-4" /> Create User
+        </Button>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
-          { label: "All", count: allMembers.length, icon: Users, color: "text-foreground", bg: "bg-secondary" },
-          { label: "Teachers", count: countByRole("teacher"), icon: UserCheck, color: "text-accent", bg: "bg-accent/10" },
-          { label: "Students", count: countByRole("student"), icon: GraduationCap, color: "text-primary", bg: "bg-primary/10" },
-          { label: "Parents", count: countByRole("parent"), icon: BookUser, color: "text-orange-600", bg: "bg-orange-500/10" },
-          { label: "Staff/Admin", count: countByRole("admin", "principal", "exam_controller"), icon: Shield, color: "text-muted-foreground", bg: "bg-muted" },
+          { label: "All",       count: allMembers.length,                             icon: Users,       color: "text-foreground",  bg: "bg-secondary" },
+          { label: "Teachers",  count: countByRole("teacher"),                        icon: UserCheck,   color: "text-violet-600",  bg: "bg-violet-500/10" },
+          { label: "Students",  count: countByRole("student"),                        icon: GraduationCap, color: "text-primary",   bg: "bg-primary/10" },
+          { label: "Parents",   count: countByRole("parent"),                         icon: BookUser,    color: "text-orange-600",  bg: "bg-orange-500/10" },
+          { label: "Staff",     count: countByRole("admin", "principal", "exam_controller"), icon: Shield, color: "text-blue-600", bg: "bg-blue-500/10" },
         ].map((stat) => (
-          <Card key={stat.label} className="border-border/50 cursor-pointer hover:shadow-sm transition-shadow" onClick={() => setActiveTab(stat.label === "All" ? "all" : stat.label === "Staff/Admin" ? "admin" : stat.label.toLowerCase())}>
+          <Card
+            key={stat.label}
+            className="border-border/50 cursor-pointer hover:shadow-sm transition-shadow"
+            onClick={() => setActiveTab(
+              stat.label === "All" ? "all" :
+              stat.label === "Staff" ? "principal" :
+              stat.label.toLowerCase().replace("s", "")
+            )}
+          >
             <CardContent className="pt-3 pb-3">
               <div className="flex items-center gap-2">
                 <div className={`${stat.bg} p-1.5 rounded-lg`}>
@@ -240,13 +286,40 @@ export default function UserManagement() {
         ))}
       </div>
 
+      {/* Role quick-create shortcuts */}
+      <Card className="border-border/50 bg-secondary/30">
+        <CardContent className="p-4">
+          <p className="text-xs font-medium text-muted-foreground mb-3">Quick Create</p>
+          <div className="flex flex-wrap gap-2">
+            {(["teacher", "student", "principal", "parent", "exam_controller"] as InstitutionRole[]).map((role) => (
+              <Button
+                key={role}
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs h-8"
+                onClick={() => {
+                  setDialogMode("create");
+                  setFullName(""); setEmail(""); setPassword("");
+                  setSelectedRole(role); setShowPassword(false);
+                  setDialogOpen(true);
+                }}
+              >
+                <UserPlus className="h-3 w-3" />
+                Add {ROLE_LABELS[role]}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Tabs & Table */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <TabsList className="bg-secondary/50">
+          <TabsList className="bg-secondary/50 flex-wrap h-auto">
             <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
             <TabsTrigger value="teacher" className="text-xs">Teachers</TabsTrigger>
             <TabsTrigger value="student" className="text-xs">Students</TabsTrigger>
+            <TabsTrigger value="principal" className="text-xs">Principals</TabsTrigger>
             <TabsTrigger value="parent" className="text-xs">Parents</TabsTrigger>
             <TabsTrigger value="admin" className="text-xs">Admin</TabsTrigger>
           </TabsList>
@@ -289,7 +362,15 @@ export default function UserManagement() {
                               {searchQuery ? "No users match your search" : "No users yet"}
                             </p>
                             {!searchQuery && (
-                              <p className="text-xs">Click "Invite User" to add team members</p>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="mt-1 gap-2"
+                                onClick={openCreate}
+                              >
+                                <UserPlus className="h-3.5 w-3.5" />
+                                Create your first user
+                              </Button>
                             )}
                           </div>
                         </TableCell>
@@ -303,7 +384,7 @@ export default function UserManagement() {
                                 {(member.full_name || "U").charAt(0).toUpperCase()}
                               </div>
                               <span className="font-medium text-sm">
-                                {member.full_name || "—"}
+                                {member.full_name || <span className="italic text-muted-foreground">No name</span>}
                               </span>
                             </div>
                           </TableCell>
@@ -315,7 +396,7 @@ export default function UserManagement() {
                               variant="outline"
                               className={`text-[10px] capitalize ${ROLE_COLORS[member.role] || ""}`}
                             >
-                              {member.role}
+                              {ROLE_LABELS[member.role] || member.role}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
@@ -328,21 +409,48 @@ export default function UserManagement() {
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-44">
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem
+                                  onClick={() => openEditRole(member.id, member.role as InstitutionRole)}
+                                  className="text-sm gap-2"
+                                >
+                                  <User className="h-3.5 w-3.5 text-muted-foreground" />
+                                  Change Role
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
                                 {ALL_ROLES.filter((r) => r !== member.role).map((r) => (
                                   <DropdownMenuItem
                                     key={r}
-                                    onClick={() => handleChangeRole(member.id, r)}
-                                    className="capitalize text-sm"
+                                    onClick={() => {
+                                      setEditMemberId(member.id);
+                                      setSelectedRole(r);
+                                      // Direct quick-change without dialog
+                                      supabase
+                                        .from("institution_members")
+                                        .update({ role: r })
+                                        .eq("id", member.id)
+                                        .then(({ error }) => {
+                                          if (error) return toast.error(error.message);
+                                          toast.success(`Role changed to ${ROLE_LABELS[r]}`);
+                                          qc.invalidateQueries({ queryKey: ["institution-members", institutionId] });
+                                        });
+                                    }}
+                                    className="text-sm pl-7 text-muted-foreground hover:text-foreground"
                                   >
-                                    Change to {r}
+                                    → {ROLE_LABELS[r]}
                                   </DropdownMenuItem>
                                 ))}
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                  className="text-destructive"
-                                  onClick={() => handleRemoveMember(member.id)}
+                                  className="text-destructive focus:text-destructive text-sm gap-2"
+                                  onClick={() =>
+                                    setDeleteTarget({
+                                      id: member.id,
+                                      name: member.full_name || "this user",
+                                    })
+                                  }
                                 >
-                                  <Trash2 className="h-3.5 w-3.5 mr-2" /> Remove
+                                  <Trash2 className="h-3.5 w-3.5" /> Remove from institution
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -357,6 +465,182 @@ export default function UserManagement() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* ── Create / Edit Role Dialog ─────────────────────────────────────── */}
+      <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) setDialogOpen(false); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <UserPlus className="h-5 w-5 text-primary" />
+              {dialogMode === "create" ? "Create New User" : "Change Role"}
+            </DialogTitle>
+          </DialogHeader>
+
+          {dialogMode === "create" ? (
+            <div className="space-y-4 pt-2">
+              {/* Role selector — prominent at top */}
+              <div className="space-y-1.5">
+                <Label>Role</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["teacher", "student", "principal", "parent", "exam_controller", "admin"] as InstitutionRole[]).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setSelectedRole(r)}
+                      className={`rounded-lg border px-2 py-2 text-xs font-medium transition-all focus:outline-none ${
+                        selectedRole === r
+                          ? `${ROLE_COLORS[r]} border-current shadow-sm`
+                          : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {ROLE_LABELS[r]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="full-name">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="full-name"
+                    placeholder="e.g. John Smith"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="user@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="password">
+                  Password
+                  <span className="text-muted-foreground font-normal ml-1 text-xs">(optional — auto-generated if blank)</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Min 6 characters"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((p) => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setDialogOpen(false)}
+                  disabled={formLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 gap-2"
+                  onClick={handleCreateUser}
+                  disabled={formLoading}
+                >
+                  {formLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4" />
+                      Create {ROLE_LABELS[selectedRole]}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <Label>New Role</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["teacher", "student", "principal", "parent", "exam_controller", "admin"] as InstitutionRole[]).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setSelectedRole(r)}
+                      className={`rounded-lg border px-2 py-2 text-xs font-medium transition-all focus:outline-none ${
+                        selectedRole === r
+                          ? `${ROLE_COLORS[r]} border-current shadow-sm`
+                          : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {ROLE_LABELS[r]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setDialogOpen(false)}
+                  disabled={formLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleEditRole}
+                  disabled={formLoading}
+                >
+                  {formLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Role"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Delete Confirm ──────────────────────────────────────────────────── */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove User?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove <strong>{deleteTarget?.name}</strong> from this institution.
+              Their account will not be deleted — they can be re-added later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && handleRemoveMember(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
