@@ -52,12 +52,19 @@ export default function QuizzesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-display font-bold">Quizzes</h1>
           <p className="text-sm text-muted-foreground">Build and manage quiz assessments</p>
         </div>
-        <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> New Quiz</Button>
+        <div className="flex gap-2">
+          <ExportButton
+            data={quizzes.map((q) => ({ Title: q.title, Description: q.description ?? "", Status: q.status, "Duration (min)": q.duration_minutes, "Total Marks": q.total_marks, "Passing Marks": q.passing_marks, "Max Attempts": q.max_attempts }))}
+            fileName="quizzes"
+            sheetName="Quizzes"
+          />
+          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> New Quiz</Button>
+        </div>
       </div>
 
       {isLoading ? (

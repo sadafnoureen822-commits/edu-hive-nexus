@@ -57,12 +57,19 @@ export default function AssignmentsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-display font-bold">Assignments</h1>
           <p className="text-sm text-muted-foreground">Create and manage student assignments</p>
         </div>
-        <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> New Assignment</Button>
+        <div className="flex gap-2">
+          <ExportButton
+            data={assignments.map((a) => ({ Title: a.title, Description: a.description ?? "", "Total Marks": a.total_marks, "Passing Marks": a.passing_marks, Status: a.status, "Due Date": a.due_date ?? "" }))}
+            fileName="assignments"
+            sheetName="Assignments"
+          />
+          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> New Assignment</Button>
+        </div>
       </div>
 
       {isLoading ? (
