@@ -323,6 +323,15 @@ export default function RoleAssignmentPage() {
             <UserPlus className="h-4 w-4" />
             Create User
           </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setRemoveAllOpen(true)}
+            className="gap-2"
+            disabled={members.length === 0}
+          >
+            <Trash2 className="h-4 w-4" />
+            Remove All Users
+          </Button>
         </div>
       </div>
 
