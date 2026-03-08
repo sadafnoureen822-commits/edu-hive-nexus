@@ -238,14 +238,15 @@ export default function ParentDashboard() {
               <TabsTrigger value="courses">Courses</TabsTrigger>
               <TabsTrigger value="announcements">Notices</TabsTrigger>
             </TabsList>
-            <ExportButton
-              data={[
+            <AIDataExport
+              contextData={[
                 ...attendance ? attendance.recent.map((a) => ({ Type: "Attendance", Date: a.date, Status: a.status })) : [],
                 ...marks.map((m, i) => ({ Type: "Marks", Index: i + 1, "Total Marks": m.total_marks ?? "", Status: m.status, Remarks: m.remarks ?? "" })),
                 ...certs.map((c) => ({ Type: "Certificate", Serial: c.serial_number, "Issued At": c.issued_at, Template: c.template })),
               ]}
+              label="AI Export"
+              exportTitle={`${currentChild?.fullName ?? "Child"} Full Report`}
               fileName={`child-report-${currentChild?.fullName ?? "child"}`}
-              sheetName="Child Report"
             />
           </div>
 
