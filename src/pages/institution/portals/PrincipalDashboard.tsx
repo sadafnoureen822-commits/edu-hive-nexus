@@ -34,8 +34,8 @@ export default function PrincipalDashboard() {
   const { data: assignments = [] } = useAssignments(instId);
   const { data: todayAtt = [] } = useAttendance(instId, today);
   const { data: allMarks = [] } = useStudentMarksByInstitution(instId);
-  const { data: sessions = [] } = useAcademicSessions(instId);
-  const { data: exams = [] } = useExams(instId);
+  const { sessions = [] } = useAcademicSessions();
+  const { exams = [] } = useExams();
 
   const go = (path: string) => navigate(`/${slug}${path}`);
 
