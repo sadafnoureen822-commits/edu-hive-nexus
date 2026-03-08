@@ -27,6 +27,7 @@ import {
   Users, UserPlus, Search, MoreHorizontal, Trash2, Pencil,
   Loader2, GraduationCap, User, Shield, School, UserCog, Building2,
 } from "lucide-react";
+import AIDataExport from "@/components/ui/AIDataExport";
 import { toast } from "sonner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -217,10 +218,23 @@ export default function MembersPage() {
           </h1>
           <p className="text-muted-foreground mt-1">Manage institution memberships across the platform</p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} className="gap-2">
-          <UserPlus className="h-4 w-4" />
-          Add New Member
-        </Button>
+        <div className="flex items-center gap-2">
+          <AIDataExport
+            contextData={filtered.map((m) => ({
+              Name: m.full_name || "Unknown",
+              Institution: m.institutions?.name ?? "—",
+              Role: ROLE_META[m.role]?.label ?? m.role,
+              Added: new Date(m.created_at).toLocaleDateString(),
+            }))}
+            label="AI Export"
+            exportTitle="Members Report"
+            fileName="platform-members"
+          />
+          <Button onClick={() => setDialogOpen(true)} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Add New Member
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

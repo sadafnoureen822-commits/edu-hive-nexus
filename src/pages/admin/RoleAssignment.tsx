@@ -33,6 +33,7 @@ import {
   User, Users, School, Loader2, Building2, Mail, Eye, EyeOff,
   UserPlus, MoreHorizontal,
 } from "lucide-react";
+import AIDataExport from "@/components/ui/AIDataExport";
 import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -293,7 +294,17 @@ export default function RoleAssignmentPage() {
             Create users or assign existing users to institutions with specific roles
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap items-center">
+          <AIDataExport
+            contextData={filtered.map((m) => ({
+              Name: m.full_name || "Unknown",
+              Institution: m.institutions?.name ?? "—",
+              Role: ROLE_META[m.role]?.label ?? m.role,
+            }))}
+            label="AI Export"
+            exportTitle="User & Role Assignments"
+            fileName="role-assignments"
+          />
           <Button variant="outline" onClick={openAssign} className="gap-2">
             <UserCog className="h-4 w-4" />
             Assign Existing

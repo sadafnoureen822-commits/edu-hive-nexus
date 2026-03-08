@@ -23,6 +23,7 @@ import {
   Edit2,
   Loader2,
 } from "lucide-react";
+import AIDataExport from "@/components/ui/AIDataExport";
 
 interface Plan {
   id: string;
@@ -167,12 +168,22 @@ export default function BillingDashboard() {
 
   return (
     <div className="p-8 space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Billing & Revenue</h1>
           <p className="text-muted-foreground mt-1">Manage subscription plans and institution billing</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap items-center">
+          <AIDataExport
+            contextData={[
+              ...subscriptions.map((s) => ({ Section: "Subscriptions", Institution: (s.institutions as any)?.name, Plan: (s.subscription_plans as any)?.name ?? "No Plan", Status: s.status, Cycle: s.billing_cycle })),
+              ...invoices.map((i) => ({ Section: "Invoices", Invoice: i.invoice_number, Institution: (i.institutions as any)?.name, Amount: `$${Number(i.amount).toLocaleString()}`, Status: i.status })),
+              ...plans.map((p) => ({ Section: "Plans", Name: p.name, Monthly: `$${p.price_monthly}`, Yearly: `$${p.price_yearly}`, Active: p.is_active ? "Yes" : "No" })),
+            ]}
+            label="AI Export"
+            exportTitle="Billing & Revenue Report"
+            fileName="billing-report"
+          />
           <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
             <DialogTrigger asChild>
               <Button variant="outline"><Building2 className="h-4 w-4 mr-2" />Assign Plan</Button>
