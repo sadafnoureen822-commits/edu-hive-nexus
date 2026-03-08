@@ -19,6 +19,47 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Handle role card click: navigate if logged in, else prompt sign-in
+  const handleRoleClick = async (roleKey: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      toast({ title: "Sign in first", description: "Enter your credentials above and click Sign In." });
+      return;
+    }
+
+    const userId = session.user.id;
+
+    if (roleKey === "superadmin") {
+      navigate("/admin");
+      return;
+    }
+
+    // For institution roles, find their membership
+    const { data: memberships } = await supabase
+      .from("institution_members")
+      .select("role, institutions!institution_id(slug)")
+      .eq("user_id", userId)
+      .limit(1);
+
+    if (!memberships?.length) {
+      toast({ title: "No institution found", description: "You are not a member of any institution.", variant: "destructive" });
+      return;
+    }
+
+    const m = memberships[0] as any;
+    const slug = m.institutions?.slug;
+    const role = m.role;
+
+    if (!slug) return;
+
+    if (roleKey === "admin") navigate(`/${slug}`);
+    else if (roleKey === "teacher") navigate(`/${slug}/teacher`);
+    else if (roleKey === "student") navigate(`/${slug}/student`);
+    else if (roleKey === "parent") navigate(`/${slug}/parent`);
+    else navigate(`/${slug}`);
+  };
+
   // After login: detect role and redirect accordingly
   const handlePostLogin = async (userId: string) => {
     // Check if platform admin
