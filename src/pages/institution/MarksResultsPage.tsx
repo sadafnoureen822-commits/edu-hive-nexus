@@ -20,6 +20,7 @@ import {
 import { Loader2, Save, ClipboardList, Award, TrendingUp, BarChart2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import ExportButton from "@/components/ui/ExportButton";
 
 interface Mark {
   student_id: string;

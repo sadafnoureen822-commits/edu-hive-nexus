@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { CalendarCheck, CheckCircle2, Circle, Clock, AlertCircle, Users, Download } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function AttendancePage() {
   const { institution } = useTenant();
