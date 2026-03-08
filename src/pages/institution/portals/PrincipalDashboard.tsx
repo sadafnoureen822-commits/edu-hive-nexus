@@ -275,9 +275,12 @@ export default function PrincipalDashboard() {
         <TabsContent value="exams" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{exams.length} exam{exams.length !== 1 ? "s" : ""} total</p>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/exams")}>
-              Manage Exams <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={exams.map((e) => ({ Name: e.name, Type: e.exam_type, Status: e.status, "Start Date": e.start_date ?? "", "End Date": e.end_date ?? "" }))} fileName="exams" sheetName="Exams" />
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/exams")}>
+                Manage Exams <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           {exams.length === 0 ? (
             <EmptyState icon={PenSquare} message="No exams created yet" action={{ label: "Create Exam", onClick: () => go("/exams") }} />
