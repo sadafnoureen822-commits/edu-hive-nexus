@@ -53,6 +53,12 @@ export default function Auth() {
 
   // Navigate to the correct portal after login — parallel queries for speed
   const handlePostLogin = async (userId: string) => {
+    // If there's a saved intended destination, go there first
+    if (from && from !== "/auth") {
+      navigate(from, { replace: true });
+      return;
+    }
+
     const [platformRes, memberRes] = await Promise.all([
       supabase.from("platform_roles").select("role").eq("user_id", userId).maybeSingle(),
       supabase
