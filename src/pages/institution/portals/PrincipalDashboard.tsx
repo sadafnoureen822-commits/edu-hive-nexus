@@ -19,6 +19,7 @@ import {
   PenSquare, AlertCircle,
 } from "lucide-react";
 import { format } from "date-fns";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function PrincipalDashboard() {
   const { institution } = useTenant();
