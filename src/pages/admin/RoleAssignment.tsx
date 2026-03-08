@@ -29,7 +29,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  UserCog, Search, Plus, Pencil, Trash2, Shield, GraduationCap,
+  UserCog, Search, Pencil, Trash2, Shield, GraduationCap,
   User, Users, School, Loader2, Building2, Mail, Eye, EyeOff,
   UserPlus, MoreHorizontal,
 } from "lucide-react";
@@ -61,7 +61,10 @@ const ROLE_META: Record<string, { label: string; icon: React.ElementType; color:
 export default function RoleAssignmentPage() {
   const qc = useQueryClient();
 
-  // Table filters
+  // Main tab
+  const [mainTab, setMainTab] = useState<"assignments" | "all-users">("assignments");
+
+  // Assignments tab filters
   const [searchUser, setSearchUser] = useState("");
   const [filterRole,  setFilterRole]  = useState<string>("all");
   const [filterInst,  setFilterInst]  = useState<string>("all");
@@ -86,10 +89,15 @@ export default function RoleAssignmentPage() {
   const [selRole,     setSelRole]     = useState<AssignableRole>("student");
   const [userSearch,  setUserSearch]  = useState("");
 
-  // Delete confirm
+  // Delete role assignment confirm
   const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
   const [removeAllOpen, setRemoveAllOpen] = useState(false);
   const [removeAllLoading, setRemoveAllLoading] = useState(false);
+
+  // All users tab
+  const [usersSearch, setUsersSearch] = useState("");
+  const [deleteUserTarget, setDeleteUserTarget] = useState<{ user_id: string; full_name: string | null } | null>(null);
+  const [deleteUserLoading, setDeleteUserLoading] = useState(false);
 
   // ── Queries ──────────────────────────────────────────────────────────────
   const { data: members = [], isLoading } = useQuery({
@@ -122,7 +130,7 @@ export default function RoleAssignmentPage() {
     },
   });
 
-  const { data: profiles = [] } = useQuery({
+  const { data: profiles = [], isLoading: profilesLoading } = useQuery({
     queryKey: ["admin-profiles-list"],
     queryFn: async () => {
       const { data } = await supabase
@@ -172,7 +180,6 @@ export default function RoleAssignmentPage() {
   const handleRemoveAll = async () => {
     setRemoveAllLoading(true);
     try {
-      // Get platform admin user IDs so we never delete their memberships
       const { data: platformAdmins } = await supabase
         .from("platform_roles")
         .select("user_id")
@@ -183,7 +190,6 @@ export default function RoleAssignmentPage() {
       let query = supabase.from("institution_members").delete().neq("id", "00000000-0000-0000-0000-000000000000");
 
       if (adminIds.length > 0) {
-        // Exclude platform admin memberships using the correct array format
         query = query.not("user_id", "in", `(${adminIds.map((id) => `"${id}"`).join(",")})`);
       }
 
@@ -197,6 +203,29 @@ export default function RoleAssignmentPage() {
       toast.error(err.message || "Failed to remove users");
     } finally {
       setRemoveAllLoading(false);
+    }
+  };
+
+  // ── Delete user permanently ───────────────────────────────────────────────
+  const handleDeleteUser = async () => {
+    if (!deleteUserTarget) return;
+    setDeleteUserLoading(true);
+    try {
+      const res = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: deleteUserTarget.user_id },
+      });
+      if (res.error) throw new Error(res.error.message);
+      const result = res.data as { success: boolean; error?: string };
+      if (!result?.success) throw new Error(result?.error || "Failed to delete user");
+
+      toast.success(`${deleteUserTarget.full_name ?? "User"} deleted permanently.`);
+      qc.invalidateQueries({ queryKey: ["admin-profiles-list"] });
+      qc.invalidateQueries({ queryKey: ["admin-members"] });
+      setDeleteUserTarget(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete user");
+    } finally {
+      setDeleteUserLoading(false);
     }
   };
 
@@ -229,7 +258,7 @@ export default function RoleAssignmentPage() {
     setDialogOpen(false); setEditMember(null);
   };
 
-  // ── Create user handler (uses edge function to avoid session hijack) ─────
+  // ── Create user handler ──────────────────────────────────────────────────
   const handleCreateUser = async () => {
     if (!cFullName.trim()) return toast.error("Full name is required");
     if (!cEmail.trim())    return toast.error("Email is required");
@@ -287,6 +316,11 @@ export default function RoleAssignmentPage() {
     !userSearch || p.full_name?.toLowerCase().includes(userSearch.toLowerCase())
   );
 
+  const filteredUsers = profiles.filter((p) =>
+    !usersSearch || p.full_name?.toLowerCase().includes(usersSearch.toLowerCase()) ||
+    p.user_id.toLowerCase().includes(usersSearch.toLowerCase())
+  );
+
   const counts = ALL_ROLES.reduce((acc, r) => {
     acc[r] = members.filter((m) => m.role === r).length;
     return acc;
@@ -324,15 +358,6 @@ export default function RoleAssignmentPage() {
             <UserPlus className="h-4 w-4" />
             Create User
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setRemoveAllOpen(true)}
-            className="gap-2"
-            disabled={members.length === 0}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete a User
-          </Button>
         </div>
       </div>
 
@@ -345,7 +370,7 @@ export default function RoleAssignmentPage() {
             <Card
               key={role}
               className="border-border/50 cursor-pointer hover:border-primary/40 transition-colors"
-              onClick={() => setFilterRole(filterRole === role ? "all" : role)}
+              onClick={() => { setMainTab("assignments"); setFilterRole(filterRole === role ? "all" : role); }}
             >
               <CardContent className="p-4 text-center space-y-1">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center mx-auto ${meta.color}`}>
@@ -380,169 +405,309 @@ export default function RoleAssignmentPage() {
         </CardContent>
       </Card>
 
-      {/* Filters */}
-      <Card className="border-border/50">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="flex-1 min-w-48">
-              <Label className="text-xs mb-1.5 block text-muted-foreground">Search User</Label>
+      {/* Main Tabs */}
+      <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as any)}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="assignments" className="gap-2">
+            <UserCog className="h-3.5 w-3.5" />
+            Role Assignments
+            <Badge variant="secondary" className="ml-1">{members.length}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="all-users" className="gap-2">
+            <Users className="h-3.5 w-3.5" />
+            All Registered Users
+            <Badge variant="secondary" className="ml-1">{profiles.length}</Badge>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ── Assignments Tab ── */}
+        <TabsContent value="assignments" className="space-y-4">
+          {/* Filters */}
+          <Card className="border-border/50">
+            <CardContent className="p-4">
+              <div className="flex flex-wrap gap-3 items-end">
+                <div className="flex-1 min-w-48">
+                  <Label className="text-xs mb-1.5 block text-muted-foreground">Search User</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Name or user ID…"
+                      value={searchUser}
+                      onChange={(e) => setSearchUser(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+                <div className="w-44">
+                  <Label className="text-xs mb-1.5 block text-muted-foreground">Filter by Role</Label>
+                  <Select value={filterRole} onValueChange={setFilterRole}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      {ALL_ROLES.map((r) => (
+                        <SelectItem key={r} value={r}>{ROLE_META[r].label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-52">
+                  <Label className="text-xs mb-1.5 block text-muted-foreground">Filter by Institution</Label>
+                  <Select value={filterInst} onValueChange={setFilterInst}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Institutions</SelectItem>
+                      {institutions.map((i) => (
+                        <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {(filterRole !== "all" || filterInst !== "all" || searchUser) && (
+                  <Button
+                    variant="ghost" size="sm"
+                    onClick={() => { setFilterRole("all"); setFilterInst("all"); setSearchUser(""); }}
+                  >
+                    Clear filters
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Table */}
+          <Card className="border-border/50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  Role Assignments
+                  <Badge variant="secondary" className="ml-2">{filtered.length}</Badge>
+                </CardTitle>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setRemoveAllOpen(true)}
+                  className="gap-2"
+                  disabled={members.length === 0}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remove All
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center gap-2 py-8 justify-center text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin" /> Loading…
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground space-y-3">
+                  <UserCog className="h-10 w-10 mx-auto opacity-30" />
+                  <p className="font-medium">No assignments found</p>
+                  <Button size="sm" variant="outline" onClick={() => openCreate()} className="gap-2">
+                    <UserPlus className="h-3.5 w-3.5" /> Create first user
+                  </Button>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Institution</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((m) => {
+                      const meta = ROLE_META[m.role] ?? ROLE_META.student;
+                      const Icon = meta.icon;
+                      return (
+                        <TableRow key={m.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-foreground">
+                                {(m.full_name ?? m.user_id).slice(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm text-foreground">
+                                  {m.full_name ?? <span className="text-muted-foreground italic">No name</span>}
+                                </p>
+                                <p className="text-xs text-muted-foreground font-mono">
+                                  {m.user_id.slice(0, 12)}…
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5 text-sm">
+                              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                              {m.institutions?.name ?? <span className="italic text-muted-foreground">Unknown</span>}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={`gap-1 ${meta.color}`}>
+                              <Icon className="h-3 w-3" />
+                              {meta.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-52">
+                                <DropdownMenuItem onClick={() => openEdit(m)} className="gap-2 text-sm">
+                                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                  Edit Role
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                {ALL_ROLES.filter((r) => r !== m.role).map((r) => (
+                                  <DropdownMenuItem
+                                    key={r}
+                                    className="pl-7 text-sm text-muted-foreground"
+                                    onClick={() =>
+                                      assignMutation.mutate({
+                                        userId: m.user_id,
+                                        institutionId: m.institution_id,
+                                        role: r,
+                                      })
+                                    }
+                                  >
+                                    → {ROLE_META[r].label}
+                                  </DropdownMenuItem>
+                                ))}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive gap-2 text-sm"
+                                  onClick={() => setDeleteTarget(m)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" /> Remove Assignment
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── All Registered Users Tab ── */}
+        <TabsContent value="all-users" className="space-y-4">
+          <Card className="border-border/50">
+            <CardContent className="p-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Name or user ID…"
-                  value={searchUser}
-                  onChange={(e) => setSearchUser(e.target.value)}
+                  placeholder="Search by name or user ID…"
+                  value={usersSearch}
+                  onChange={(e) => setUsersSearch(e.target.value)}
                   className="pl-9"
                 />
               </div>
-            </div>
-            <div className="w-44">
-              <Label className="text-xs mb-1.5 block text-muted-foreground">Filter by Role</Label>
-              <Select value={filterRole} onValueChange={setFilterRole}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  {ALL_ROLES.map((r) => (
-                    <SelectItem key={r} value={r}>{ROLE_META[r].label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-52">
-              <Label className="text-xs mb-1.5 block text-muted-foreground">Filter by Institution</Label>
-              <Select value={filterInst} onValueChange={setFilterInst}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Institutions</SelectItem>
-                  {institutions.map((i) => (
-                    <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {(filterRole !== "all" || filterInst !== "all" || searchUser) && (
-              <Button
-                variant="ghost" size="sm"
-                onClick={() => { setFilterRole("all"); setFilterInst("all"); setSearchUser(""); }}
-              >
-                Clear filters
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
 
-      {/* Table */}
-      <Card className="border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary" />
-            Role Assignments
-            <Badge variant="secondary" className="ml-2">{filtered.length}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center gap-2 py-8 justify-center text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" /> Loading…
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground space-y-3">
-              <UserCog className="h-10 w-10 mx-auto opacity-30" />
-              <p className="font-medium">No assignments found</p>
-              <Button size="sm" variant="outline" onClick={() => openCreate()} className="gap-2">
-                <UserPlus className="h-3.5 w-3.5" /> Create first user
-              </Button>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Institution</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((m) => {
-                  const meta = ROLE_META[m.role] ?? ROLE_META.student;
-                  const Icon = meta.icon;
-                  return (
-                    <TableRow key={m.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-foreground">
-                            {(m.full_name ?? m.user_id).slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm text-foreground">
-                              {m.full_name ?? <span className="text-muted-foreground italic">No name</span>}
-                            </p>
-                            <p className="text-xs text-muted-foreground font-mono">
-                              {m.user_id.slice(0, 12)}…
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 text-sm">
-                          <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          {m.institutions?.name ?? <span className="italic text-muted-foreground">Unknown</span>}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`gap-1 ${meta.color}`}>
-                          <Icon className="h-3 w-3" />
-                          {meta.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-52">
-                            <DropdownMenuItem onClick={() => openEdit(m)} className="gap-2 text-sm">
-                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                              Edit Role
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {ALL_ROLES.filter((r) => r !== m.role).map((r) => (
-                              <DropdownMenuItem
-                                key={r}
-                                className="pl-7 text-sm text-muted-foreground"
-                                onClick={() =>
-                                  assignMutation.mutate({
-                                    userId: m.user_id,
-                                    institutionId: m.institution_id,
-                                    role: r,
-                                  })
-                                }
-                              >
-                                → {ROLE_META[r].label}
-                              </DropdownMenuItem>
-                            ))}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive gap-2 text-sm"
-                              onClick={() => setDeleteTarget(m)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" /> Remove
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+          <Card className="border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                Registered Users
+                <Badge variant="secondary" className="ml-2">{filteredUsers.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {profilesLoading ? (
+                <div className="flex items-center gap-2 py-8 justify-center text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin" /> Loading…
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground space-y-3">
+                  <User className="h-10 w-10 mx-auto opacity-30" />
+                  <p className="font-medium">No users found</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>User ID</TableHead>
+                      <TableHead>Assignments</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((p) => {
+                      const userMemberships = members.filter((m) => m.user_id === p.user_id);
+                      return (
+                        <TableRow key={p.user_id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                                {(p.full_name ?? p.user_id).slice(0, 2).toUpperCase()}
+                              </div>
+                              <p className="font-medium text-sm text-foreground">
+                                {p.full_name ?? <span className="italic text-muted-foreground">No name</span>}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-xs text-muted-foreground font-mono">
+                              {p.user_id.slice(0, 16)}…
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            {userMemberships.length === 0 ? (
+                              <span className="text-xs text-muted-foreground italic">None</span>
+                            ) : (
+                              <div className="flex flex-wrap gap-1">
+                                {userMemberships.slice(0, 3).map((m) => {
+                                  const meta = ROLE_META[m.role] ?? ROLE_META.student;
+                                  return (
+                                    <Badge key={m.id} variant="outline" className={`text-xs gap-1 ${meta.color}`}>
+                                      {meta.label}
+                                      {m.institutions?.name && (
+                                        <span className="text-muted-foreground">@ {m.institutions.name}</span>
+                                      )}
+                                    </Badge>
+                                  );
+                                })}
+                                {userMemberships.length > 3 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    +{userMemberships.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="gap-1.5 h-8"
+                              onClick={() => setDeleteUserTarget({ user_id: p.user_id, full_name: p.full_name })}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Delete
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* ── Create / Assign Dialog ─────────────────────────────────────────── */}
       <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) closeDialog(); }}>
@@ -567,7 +732,6 @@ export default function RoleAssignmentPage() {
 
               {/* ── Create tab ── */}
               <TabsContent value="create" className="space-y-4 pt-2">
-                {/* Role grid */}
                 <div className="space-y-1.5">
                   <Label>Role</Label>
                   <div className="grid grid-cols-3 gap-2">
@@ -824,7 +988,7 @@ export default function RoleAssignmentPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Delete Confirm ────────────────────────────────────────────────── */}
+      {/* ── Delete Role Assignment Confirm ─────────────────────────────────── */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -848,13 +1012,45 @@ export default function RoleAssignmentPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ── Remove All Confirm ────────────────────────────────────────────── */}
+      {/* ── Delete User Permanently Confirm ───────────────────────────────── */}
+      <AlertDialog open={!!deleteUserTarget} onOpenChange={(o) => { if (!o) setDeleteUserTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              Delete User Permanently?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                This will permanently delete <strong>{deleteUserTarget?.full_name ?? "this user"}</strong> from the platform.
+              </span>
+              <span className="block text-destructive font-medium">
+                All their data, role assignments and access will be removed. This cannot be undone.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteUserLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={handleDeleteUser}
+              disabled={deleteUserLoading}
+            >
+              {deleteUserLoading ? (
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" />Deleting…</>
+              ) : "Yes, Delete User"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Remove All Assignments Confirm ────────────────────────────────── */}
       <AlertDialog open={removeAllOpen} onOpenChange={(o) => { if (!o) setRemoveAllOpen(false); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Trash2 className="h-5 w-5 text-destructive" />
-              Remove All Users?
+              Remove All Assignments?
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <span className="block">
