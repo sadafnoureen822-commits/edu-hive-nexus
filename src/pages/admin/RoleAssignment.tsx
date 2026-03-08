@@ -168,6 +168,37 @@ export default function RoleAssignmentPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // ── Remove All (excluding platform admins) ────────────────────────────────
+  const handleRemoveAll = async () => {
+    setRemoveAllLoading(true);
+    try {
+      // Get platform admin user IDs so we never delete their memberships
+      const { data: platformAdmins } = await supabase
+        .from("platform_roles")
+        .select("user_id")
+        .eq("role", "platform_admin");
+
+      const adminIds = (platformAdmins ?? []).map((r) => r.user_id);
+
+      let query = supabase.from("institution_members").delete();
+      if (adminIds.length > 0) {
+        // Delete all members whose user_id is NOT in the platform admins list
+        query = query.not("user_id", "in", `(${adminIds.join(",")})`);
+      }
+
+      const { error } = await query;
+      if (error) throw error;
+
+      toast.success("All non-admin users removed successfully.");
+      qc.invalidateQueries({ queryKey: ["admin-members"] });
+      setRemoveAllOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove users");
+    } finally {
+      setRemoveAllLoading(false);
+    }
+  };
+
   // ── Helpers ───────────────────────────────────────────────────────────────
   const openCreate = (preRole?: AssignableRole) => {
     setEditMember(null);
