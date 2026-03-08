@@ -318,14 +318,22 @@ export default function PortalLogin() {
             <button
               type="button"
               onClick={() => switchMode("login")}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mode === "login" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                mode === "login"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:text-foreground"
+              }`}
             >
               Sign In
             </button>
             <button
               type="button"
               onClick={() => switchMode("signup")}
-              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mode === "signup" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                mode === "signup"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:text-foreground"
+              }`}
             >
               Sign Up
             </button>
