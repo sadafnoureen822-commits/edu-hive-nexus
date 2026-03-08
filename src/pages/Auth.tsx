@@ -160,9 +160,11 @@ export default function Auth() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         toast({ title: "Login failed", description: error.message, variant: "destructive" });
+        setLoading(false);
       } else if (data.user) {
         toast({ title: "Welcome back!" });
-        await handlePostLogin(data.user.id);
+        // Don't reset loading — navigate right away (page unmounts, no stuck spinner)
+        handlePostLogin(data.user.id);
       }
     } else {
       if (!fullName.trim()) {
@@ -186,9 +188,8 @@ export default function Auth() {
           description: "We sent you a confirmation link to verify your account.",
         });
       }
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
