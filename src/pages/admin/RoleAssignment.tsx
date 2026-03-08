@@ -195,7 +195,7 @@ export default function RoleAssignmentPage() {
     setDialogOpen(false); setEditMember(null);
   };
 
-  // ── Create user handler ───────────────────────────────────────────────────
+  // ── Create user handler (uses edge function to avoid session hijack) ─────
   const handleCreateUser = async () => {
     if (!cFullName.trim()) return toast.error("Full name is required");
     if (!cEmail.trim())    return toast.error("Email is required");
@@ -206,50 +206,27 @@ export default function RoleAssignmentPage() {
 
     setCreateLoading(true);
     try {
-      const pwd = cPassword || Math.random().toString(36).slice(-8) + "Aa1!";
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: cEmail.trim().toLowerCase(),
-        password: pwd,
-        options: { data: { full_name: cFullName.trim() } },
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
+      const res = await supabase.functions.invoke("admin-create-user", {
+        body: {
+          email: cEmail.trim().toLowerCase(),
+          password: cPassword || undefined,
+          full_name: cFullName.trim(),
+          institution_id: cInstId,
+          role: cRole,
+        },
       });
 
-      if (signUpError) {
-        if (signUpError.message.toLowerCase().includes("already registered") ||
-            signUpError.message.toLowerCase().includes("already exists")) {
-          toast.warning("Email already registered — use 'Assign Existing User' instead.", { duration: 6000 });
-          setDialogTab("assign");
-          setCreateLoading(false);
-          return;
-        }
-        throw signUpError;
-      }
+      if (res.error) throw new Error(res.error.message || "Edge function error");
+      const result = res.data as { success: boolean; already_existed?: boolean; error?: string };
+      if (!result?.success) throw new Error(result?.error || "Failed to create user");
 
-      const userId = signUpData?.user?.id;
-      if (!userId) {
-        toast.warning("Could not retrieve user ID — the user may already exist.");
-        setCreateLoading(false);
-        return;
-      }
-
-      // Upsert profile
-      await supabase.from("profiles").upsert(
-        { user_id: userId, full_name: cFullName.trim() },
-        { onConflict: "user_id" }
-      );
-
-      // Add institution membership
-      const { data: existing } = await supabase
-        .from("institution_members").select("id")
-        .eq("user_id", userId).eq("institution_id", cInstId).maybeSingle();
-
-      if (existing) {
-        await supabase.from("institution_members")
-          .update({ role: cRole as any }).eq("id", existing.id);
+      if (result.already_existed) {
         toast.success(`User already existed — role set to ${ROLE_META[cRole].label}.`);
       } else {
-        const { error } = await supabase.from("institution_members")
-          .insert({ user_id: userId, institution_id: cInstId, role: cRole as any });
-        if (error) throw error;
         toast.success(`${cFullName} created as ${ROLE_META[cRole].label}!`);
       }
 
