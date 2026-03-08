@@ -93,13 +93,19 @@ export default function InstitutionsPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Institutions</h1>
           <p className="text-muted-foreground mt-1">Manage your tenants</p>
         </div>
-
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <div className="flex items-center gap-2">
+          <AIDataExport
+            contextData={institutions.map((i) => ({ Name: i.name, Slug: i.slug, Status: i.status, Created: new Date(i.created_at).toLocaleDateString() }))}
+            label="AI Export"
+            exportTitle="Institutions Report"
+            fileName="institutions"
+          />
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
