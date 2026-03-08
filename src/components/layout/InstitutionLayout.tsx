@@ -160,7 +160,7 @@ export default function InstitutionLayout() {
       else if (role === "parent") navigate(`${basePath}/parent`, { replace: true });
       // admin stays at basePath (dashboard)
     }
-  }, [slug, loading, membership, role, location.pathname]);
+  }, [slug, loading, membership, role, location.pathname, navigate]);
 
   // Block non-admin roles from accessing admin-only paths
   useEffect(() => {
@@ -175,7 +175,7 @@ export default function InstitutionLayout() {
       else if (role === "teacher") navigate(`${basePath}/teacher`, { replace: true });
       else if (role === "parent") navigate(`${basePath}/parent`, { replace: true });
     }
-  }, [location.pathname, slug, loading, membership, role, isPlatformAdmin]);
+  }, [location.pathname, slug, loading, membership, role, isPlatformAdmin, navigate]);
 
   if (loading) {
     return (
