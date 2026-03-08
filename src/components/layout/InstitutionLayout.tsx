@@ -146,6 +146,11 @@ export default function InstitutionLayout() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth", { replace: true });
+  };
+
   const role = membership?.role ?? null;
 
   // Auto-redirect to the correct home page for the role
