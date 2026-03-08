@@ -64,6 +64,14 @@ const PORTAL_META: Record<PortalSlug, {
     allowSignup: true,
     signupNote: "After signing up, your Institution Admin must link your account to your child.",
   },
+  principal: {
+    label: "Principal", sub: "School oversight",
+    Icon: ShieldCheck,
+    lightBg: "bg-teal-50 border-teal-200", iconColor: "text-teal-600", iconBg: "bg-teal-100",
+    dbRoles: ["principal"],
+    allowSignup: true,
+    signupNote: "After signing up, a Super Admin must assign you as Principal of an institution.",
+  },
 };
 
 export default function PortalLogin() {
