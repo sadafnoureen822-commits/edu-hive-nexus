@@ -162,7 +162,18 @@ export default function PortalLogin() {
 
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError || !authData.user) {
-      toast({ title: "Login failed", description: authError?.message || "Unknown error", variant: "destructive" });
+      const msg = authError?.message ?? "Unknown error";
+      const isWrongPassword =
+        msg.toLowerCase().includes("invalid") ||
+        msg.toLowerCase().includes("credentials") ||
+        msg.toLowerCase().includes("password");
+      toast({
+        title: "Login failed",
+        description: isWrongPassword
+          ? "Incorrect email or password. Please try again or use 'Forgot password?' to reset it."
+          : msg,
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
@@ -188,7 +199,11 @@ export default function PortalLogin() {
 
     if (!memberships?.length) {
       await supabase.auth.signOut();
-      toast({ title: "Access Denied", description: "You are not assigned to any institution yet. Please contact your admin.", variant: "destructive" });
+      toast({
+        title: "Not assigned to an institution",
+        description: "Your account exists but you haven't been assigned to any institution yet. Please contact your administrator.",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
@@ -204,8 +219,8 @@ export default function PortalLogin() {
         teacher: "/teacher/login", student: "/student/login", parent: "/parent/login",
       };
       toast({
-        title: "Access Denied",
-        description: `Your role is "${actualRole}". Please use the correct portal.`,
+        title: "Wrong portal",
+        description: `Your role is "${actualRole}". Redirecting you to the correct portal…`,
         variant: "destructive",
       });
       setTimeout(() => navigate(portalForRole[actualRole] || "/auth"), 1500);
@@ -221,13 +236,13 @@ export default function PortalLogin() {
 
     const slug = institution?.slug;
     if (!slug) {
-      toast({ title: "Institution not found", variant: "destructive" });
+      toast({ title: "Institution not found", description: "Could not locate your institution. Contact support.", variant: "destructive" });
       setLoading(false);
       return;
     }
 
     setLoading(false);
-    toast({ title: "Welcome!", description: "Redirecting to your portal..." });
+    toast({ title: "Welcome!", description: "Redirecting to your portal…" });
 
     if (match.role === "student") navigate(`/${slug}/student`, { replace: true });
     else if (match.role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
