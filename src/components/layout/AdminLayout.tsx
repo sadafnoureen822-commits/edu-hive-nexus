@@ -26,8 +26,8 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card flex flex-col">
+      {/* Sidebar — fixed so it doesn't scroll with content */}
+      <aside className="fixed inset-y-0 left-0 w-64 border-r border-border bg-card flex flex-col z-30">
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="feature-icon w-8 h-8">
@@ -45,9 +45,9 @@ export default function AdminLayout() {
           )}
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.href;
+            const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + "/");
             return (
               <Link
                 key={item.href}
@@ -78,8 +78,8 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      {/* Main content — offset by sidebar width */}
+      <main className="flex-1 ml-64 overflow-auto min-h-screen">
         <Outlet />
       </main>
     </div>

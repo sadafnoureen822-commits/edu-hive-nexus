@@ -62,7 +62,8 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
+function App() {
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -91,13 +92,15 @@ const App = () => (
               <Route path="billing" element={<BillingDashboard />} />
             </Route>
 
-            {/* Institution routes (tenant) */}
+            {/* Institution routes (tenant) — wrapped in ProtectedRoute so unauthenticated users go to /auth */}
             <Route
               path="/:slug"
               element={
-                <TenantProvider>
-                  <InstitutionLayout />
-                </TenantProvider>
+                <ProtectedRoute>
+                  <TenantProvider>
+                    <InstitutionLayout />
+                  </TenantProvider>
+                </ProtectedRoute>
               }
             >
               <Route index element={<InstitutionOverview />} />
@@ -138,7 +141,7 @@ const App = () => (
               <Route path="parent" element={<ParentDashboard />} />
             </Route>
 
-            {/* Marks & Results under institution */}
+            {/* Public site routes */}
             <Route path="/site/:slug/*" element={<PublicSite />} />
             <Route path="/verify" element={<CertificateVerification />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -148,6 +151,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+}
 
 export default App;
