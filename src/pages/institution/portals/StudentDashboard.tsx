@@ -253,6 +253,10 @@ export default function StudentDashboard() {
 
         {/* Quizzes */}
         <TabsContent value="quizzes" className="mt-4">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-xs text-muted-foreground">{publishedQuizzes.length} quiz{publishedQuizzes.length !== 1 ? "zes" : ""} available</p>
+            <ExportButton data={publishedQuizzes.map((q) => ({ Title: q.title, "Total Marks": q.total_marks, "Duration (min)": q.duration_minutes, "Max Attempts": q.max_attempts }))} fileName="available-quizzes" sheetName="Quizzes" />
+          </div>
           {publishedQuizzes.length === 0 ? (
             <EmptyState icon={HelpCircle} message="No quizzes available" />
           ) : (
