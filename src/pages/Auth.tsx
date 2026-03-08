@@ -240,18 +240,55 @@ export default function Auth() {
           </CardContent>
         </Card>
 
-        {/* Role hint cards */}
-        <div className="grid grid-cols-3 gap-2 text-center">
-          {[
-            { role: "Super Admin", hint: "Platform control" },
-            { role: "Institution Admin", hint: "Manage school" },
-            { role: "Teacher / Student", hint: "Role portal" },
-          ].map((r) => (
-            <div key={r.role} className="p-3 rounded-xl border border-border/50 bg-card">
-              <p className="text-xs font-semibold text-foreground">{r.role}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{r.hint}</p>
-            </div>
-          ))}
+        {/* Role access cards */}
+        <div className="space-y-2">
+          <p className="text-center text-xs text-muted-foreground">Sign in as</p>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            {[
+              {
+                role: "Super Admin",
+                hint: "Platform control",
+                icon: "🛡️",
+                description: "Full platform access. Manage all institutions, billing & subscriptions.",
+                color: "hover:border-destructive/50 hover:bg-destructive/5",
+              },
+              {
+                role: "Institution Admin",
+                hint: "Manage school",
+                icon: "🏫",
+                description: "Manage your school: students, teachers, exams, fees & more.",
+                color: "hover:border-primary/50 hover:bg-primary/5",
+              },
+              {
+                role: "Teacher / Student",
+                hint: "Role portal",
+                icon: "🎓",
+                description: "Access your personal portal: courses, assignments, results & attendance.",
+                color: "hover:border-chart-2/50 hover:bg-chart-2/5",
+              },
+            ].map((r) => (
+              <button
+                key={r.role}
+                type="button"
+                onClick={() => {
+                  setIsLogin(true);
+                  setForgotMode(false);
+                  toast({
+                    title: `${r.icon} ${r.role}`,
+                    description: r.description,
+                  });
+                }}
+                className={`p-3 rounded-xl border border-border/50 bg-card text-left transition-all cursor-pointer ${r.color}`}
+              >
+                <p className="text-lg">{r.icon}</p>
+                <p className="text-xs font-semibold text-foreground mt-1">{r.role}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{r.hint}</p>
+              </button>
+            ))}
+          </div>
+          <p className="text-center text-[10px] text-muted-foreground">
+            Tap a role to learn more, then sign in with your credentials.
+          </p>
         </div>
       </div>
     </div>
