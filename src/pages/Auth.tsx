@@ -162,8 +162,10 @@ export default function Auth() {
         toast({ title: "Login failed", description: error.message, variant: "destructive" });
         setLoading(false);
       } else if (data.user) {
+        // Reset loading immediately so button doesn't stay on "Please wait..."
+        // Navigation happens asynchronously in the background
+        setLoading(false);
         toast({ title: "Welcome back!" });
-        // Don't reset loading — navigate right away (page unmounts, no stuck spinner)
         handlePostLogin(data.user.id);
       }
     } else {
