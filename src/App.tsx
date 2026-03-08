@@ -38,6 +38,15 @@ import AttendancePage from "./pages/institution/AttendancePage";
 import StudentDashboard from "./pages/institution/portals/StudentDashboard";
 import TeacherDashboard from "./pages/institution/portals/TeacherDashboard";
 import ParentDashboard from "./pages/institution/portals/ParentDashboard";
+import TimetablePage from "./pages/institution/TimetablePage";
+import FeeManagement from "./pages/institution/FeeManagement";
+import AnnouncementsPage from "./pages/institution/AnnouncementsPage";
+import AdmissionsPage from "./pages/institution/AdmissionsPage";
+import StudentProfilesPage from "./pages/institution/StudentProfilesPage";
+import NotificationCenter from "./pages/institution/NotificationCenter";
+import ActivityLogsPage from "./pages/institution/ActivityLogsPage";
+import StudentPromotionsPage from "./pages/institution/StudentPromotionsPage";
+import ApiKeysPage from "./pages/institution/ApiKeysPage";
 import PublicSite from "./pages/public/PublicSite";
 import CertificateVerification from "./pages/public/CertificateVerification";
 
@@ -72,7 +81,7 @@ const App = () => (
               <Route path="billing" element={<BillingDashboard />} />
             </Route>
 
-            {/* Institution admin routes (tenant) */}
+            {/* Institution routes (tenant) */}
             <Route
               path="/:slug"
               element={
@@ -86,21 +95,32 @@ const App = () => (
               <Route path="users" element={<UserManagement />} />
               <Route path="academics" element={<AcademicControl />} />
               <Route path="exams" element={<ExamManagement />} />
+              <Route path="attendance" element={<AttendancePage />} />
               <Route path="communication" element={<CommunicationCenter />} />
               <Route path="billing" element={<BillingSubscription />} />
               <Route path="settings" element={<InstitutionSettings />} />
+              {/* Academics extras */}
+              <Route path="timetable" element={<TimetablePage />} />
+              <Route path="fees" element={<FeeManagement />} />
+              <Route path="admissions" element={<AdmissionsPage />} />
+              <Route path="student-profiles" element={<StudentProfilesPage />} />
+              <Route path="promotions" element={<StudentPromotionsPage />} />
+              {/* CMS */}
               <Route path="cms" element={<CmsPages />} />
               <Route path="cms/pages/:pageId" element={<CmsPageEditor />} />
               <Route path="cms/menus" element={<CmsMenuManager />} />
               <Route path="cms/media" element={<CmsMediaManager />} />
               <Route path="cms/settings" element={<CmsSiteSettings />} />
-              {/* LMS Routes */}
+              <Route path="announcements" element={<AnnouncementsPage />} />
+              {/* LMS */}
               <Route path="courses" element={<CoursesPage />} />
               <Route path="assignments" element={<AssignmentsPage />} />
               <Route path="quizzes" element={<QuizzesPage />} />
               <Route path="certificates" element={<CertificatesPage />} />
-              {/* Attendance */}
-              <Route path="attendance" element={<AttendancePage />} />
+              {/* Admin utilities */}
+              <Route path="notifications" element={<NotificationCenter />} />
+              <Route path="activity-logs" element={<ActivityLogsPage />} />
+              <Route path="api-keys" element={<ApiKeysPage />} />
               {/* Role Portals */}
               <Route path="student" element={<StudentDashboard />} />
               <Route path="teacher" element={<TeacherDashboard />} />
