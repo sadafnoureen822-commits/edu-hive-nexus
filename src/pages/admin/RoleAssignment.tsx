@@ -88,6 +88,8 @@ export default function RoleAssignmentPage() {
 
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
+  const [removeAllOpen, setRemoveAllOpen] = useState(false);
+  const [removeAllLoading, setRemoveAllLoading] = useState(false);
 
   // ── Queries ──────────────────────────────────────────────────────────────
   const { data: members = [], isLoading } = useQuery({
@@ -165,6 +167,37 @@ export default function RoleAssignmentPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  // ── Remove All (excluding platform admins) ────────────────────────────────
+  const handleRemoveAll = async () => {
+    setRemoveAllLoading(true);
+    try {
+      // Get platform admin user IDs so we never delete their memberships
+      const { data: platformAdmins } = await supabase
+        .from("platform_roles")
+        .select("user_id")
+        .eq("role", "platform_admin");
+
+      const adminIds = (platformAdmins ?? []).map((r) => r.user_id);
+
+      let query = supabase.from("institution_members").delete();
+      if (adminIds.length > 0) {
+        // Delete all members whose user_id is NOT in the platform admins list
+        query = query.not("user_id", "in", `(${adminIds.join(",")})`);
+      }
+
+      const { error } = await query;
+      if (error) throw error;
+
+      toast.success("All non-admin users removed successfully.");
+      qc.invalidateQueries({ queryKey: ["admin-members"] });
+      setRemoveAllOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove users");
+    } finally {
+      setRemoveAllLoading(false);
+    }
+  };
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const openCreate = (preRole?: AssignableRole) => {
@@ -289,6 +322,15 @@ export default function RoleAssignmentPage() {
           <Button onClick={() => openCreate()} className="gap-2">
             <UserPlus className="h-4 w-4" />
             Create User
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setRemoveAllOpen(true)}
+            className="gap-2"
+            disabled={members.length === 0}
+          >
+            <Trash2 className="h-4 w-4" />
+            Remove All Users
           </Button>
         </div>
       </div>
@@ -666,7 +708,7 @@ export default function RoleAssignmentPage() {
                     </div>
                   )}
                   {selUserId && (
-                    <p className="text-xs text-green-600 font-medium">
+                    <p className="text-xs text-primary font-medium">
                       ✓ User selected: <span className="font-mono">{selUserId.slice(0, 16)}…</span>
                     </p>
                   )}
@@ -800,6 +842,41 @@ export default function RoleAssignmentPage() {
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
               {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Remove"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Remove All Confirm ────────────────────────────────────────────── */}
+      <AlertDialog open={removeAllOpen} onOpenChange={(o) => { if (!o) setRemoveAllOpen(false); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              Remove All Users?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                This will permanently remove <strong>all {members.length} institution membership(s)</strong> from the platform.
+              </span>
+              <span className="block font-medium text-foreground">
+                ✓ Super Admin accounts will NOT be affected.
+              </span>
+              <span className="block text-destructive">
+                All teachers, students, parents, principals and admins will lose portal access immediately. This cannot be undone.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removeAllLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={handleRemoveAll}
+              disabled={removeAllLoading}
+            >
+              {removeAllLoading ? (
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" />Removing…</>
+              ) : "Yes, Remove All"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
