@@ -1,4 +1,5 @@
 import { Check, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const plans = [
@@ -57,6 +58,7 @@ const plans = [
 ];
 
 const PricingSection = () => {
+  const navigate = useNavigate();
   return (
     <section id="pricing" className="py-24 bg-gradient-to-b from-secondary/30 to-background">
       <div className="container mx-auto px-4">
@@ -124,6 +126,7 @@ const PricingSection = () => {
                 variant={plan.popular ? "heroOutline" : "default"}
                 className={`w-full ${plan.popular ? "bg-white text-primary hover:bg-white/90" : ""}`}
                 size="lg"
+                onClick={() => navigate("/auth")}
               >
                 {plan.price === "Custom" ? "Contact Sales" : "Start Free Trial"}
               </Button>
@@ -136,7 +139,7 @@ const PricingSection = () => {
           <p className="text-muted-foreground mb-4">
             Need a custom solution for multiple institutions?
           </p>
-          <Button variant="outline" size="lg">
+          <Button variant="outline" size="lg" onClick={() => navigate("/auth")}>
             Schedule Enterprise Demo
           </Button>
         </div>

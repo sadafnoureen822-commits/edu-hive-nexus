@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, GraduationCap } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: "Features", href: "#features" },
@@ -39,10 +41,10 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
               Sign In
             </Button>
-            <Button variant="default" size="sm">
+            <Button variant="default" size="sm" onClick={() => navigate("/auth")}>
               Start Free Trial
             </Button>
           </div>
@@ -71,10 +73,10 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
                   Sign In
                 </Button>
-                <Button variant="default" size="sm">
+                <Button variant="default" size="sm" onClick={() => navigate("/auth")}>
                   Start Free Trial
                 </Button>
               </div>
