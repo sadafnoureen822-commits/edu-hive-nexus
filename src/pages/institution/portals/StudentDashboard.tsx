@@ -217,7 +217,10 @@ export default function StudentDashboard() {
         <TabsContent value="assignments" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{activeAssignments.length} active</p>
-            <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/assignments")}>View All <ArrowRight className="h-3 w-3" /></Button>
+            <div className="flex gap-2">
+              <ExportButton data={activeAssignments.map((a) => ({ Title: a.title, "Total Marks": a.total_marks, "Due Date": a.due_date ?? "", Status: a.status }))} fileName="active-assignments" sheetName="Assignments" />
+              <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/assignments")}>View All <ArrowRight className="h-3 w-3" /></Button>
+            </div>
           </div>
           {activeAssignments.length === 0 ? (
             <EmptyState icon={ClipboardList} message="No active assignments" />
