@@ -62,7 +62,8 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
+function App() {
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -91,13 +92,15 @@ const App = () => (
               <Route path="billing" element={<BillingDashboard />} />
             </Route>
 
-            {/* Institution routes (tenant) */}
+            {/* Institution routes (tenant) — wrapped in ProtectedRoute so unauthenticated users go to /auth */}
             <Route
               path="/:slug"
               element={
-                <TenantProvider>
-                  <InstitutionLayout />
-                </TenantProvider>
+                <ProtectedRoute>
+                  <TenantProvider>
+                    <InstitutionLayout />
+                  </TenantProvider>
+                </ProtectedRoute>
               }
             >
               <Route index element={<InstitutionOverview />} />
