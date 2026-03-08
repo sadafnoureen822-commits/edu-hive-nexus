@@ -75,12 +75,8 @@ function App() {
             {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            {/* Role-specific portal login routes */}
-            <Route path="/super-admin/login" element={<PortalLogin />} />
-            <Route path="/admin/login" element={<PortalLogin />} />
-            <Route path="/teacher/login" element={<PortalLogin />} />
-            <Route path="/student/login" element={<PortalLogin />} />
-            <Route path="/parent/login" element={<PortalLogin />} />
+            {/* Role-specific portal login — /:portal/login where portal = super-admin | admin | teacher | student | parent */}
+            <Route path="/:portal/login" element={<PortalLogin />} />
 
             {/* Admin routes (platform admin) */}
             <Route
