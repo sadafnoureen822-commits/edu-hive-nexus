@@ -61,37 +61,45 @@ Deno.serve(async (req) => {
     const normalizedEmail = email.trim().toLowerCase();
     const pwd = password || (Math.random().toString(36).slice(-8) + "Aa1!");
 
-    // Step 1: Check if user already exists by searching
     let userId: string;
     let alreadyExisted = false;
 
-    const { data: searchData } = await supabaseAdmin.auth.admin.listUsers({
-      perPage: 1000,
+    // Try to create the user first
+    const { data: newUserData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: normalizedEmail,
+      password: pwd,
+      email_confirm: true,
+      user_metadata: { full_name: full_name?.trim() ?? "" },
     });
 
-    const existingAuthUser = searchData?.users?.find(
-      (u) => u.email?.toLowerCase() === normalizedEmail
-    );
+    if (createError) {
+      // User already exists — find them via listUsers with page search
+      const isAlreadyExists =
+        createError.message.toLowerCase().includes("already") ||
+        createError.message.toLowerCase().includes("registered") ||
+        createError.message.toLowerCase().includes("exists") ||
+        createError.message.toLowerCase().includes("unique");
 
-    if (existingAuthUser) {
-      // User exists — just assign/update their role
-      userId = existingAuthUser.id;
-      alreadyExisted = true;
-    } else {
-      // Create new user
-      const { data: newUserData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: normalizedEmail,
-        password: pwd,
-        email_confirm: true,
-        user_metadata: { full_name: full_name?.trim() ?? "" },
-      });
-
-      if (createError) {
+      if (!isAlreadyExists) {
         return new Response(JSON.stringify({ error: createError.message }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
+      // Look up the existing user's ID via DB function (bypasses listUsers pagination issues)
+      const { data: existingUserId, error: lookupError } = await supabaseAdmin
+        .rpc("get_user_id_by_email", { p_email: normalizedEmail });
+
+      if (lookupError || !existingUserId) {
+        return new Response(
+          JSON.stringify({ error: "User already exists but could not be located. Please assign the role manually." }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      userId = existingUserId;
+      alreadyExisted = true;
+    } else {
       userId = newUserData.user!.id;
     }
 
@@ -101,7 +109,7 @@ Deno.serve(async (req) => {
       { onConflict: "user_id" }
     );
 
-    // Check if membership already exists
+    // Check if membership already exists for this institution
     const { data: existingMember } = await supabaseAdmin
       .from("institution_members")
       .select("id")
