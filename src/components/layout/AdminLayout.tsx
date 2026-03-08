@@ -23,8 +23,12 @@ const navItems = [
 export default function AdminLayout() {
   const { user, signOut, isPlatformAdmin } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  return (
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth", { replace: true });
+  };
     <div className="min-h-screen bg-background flex">
       {/* Sidebar — fixed so it doesn't scroll with content */}
       <aside className="fixed inset-y-0 left-0 w-64 border-r border-border bg-card flex flex-col z-30">
