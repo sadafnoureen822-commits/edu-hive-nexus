@@ -8,9 +8,10 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, requirePlatformAdmin = false }: ProtectedRouteProps) {
-  const { user, loading, isPlatformAdmin } = useAuth();
+  const { user, loading, isPlatformAdmin, isPlatformAdminLoading } = useAuth();
   const location = useLocation();
 
+  // Wait for auth session to load
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -19,13 +20,24 @@ export default function ProtectedRoute({ children, requirePlatformAdmin = false 
     );
   }
 
+  // Not authenticated → go to login
   if (!user) {
-    // Preserve intended destination so we can redirect back after login
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  if (requirePlatformAdmin && !isPlatformAdmin) {
-    return <Navigate to="/auth" replace />;
+  // Platform admin check: wait for the DB role lookup to finish before deciding
+  if (requirePlatformAdmin) {
+    if (isPlatformAdminLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+    if (!isPlatformAdmin) {
+      // Authenticated but not a platform admin → bounce back to home
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <>{children}</>;
