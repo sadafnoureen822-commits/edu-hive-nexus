@@ -251,6 +251,10 @@ export default function ParentDashboard() {
 
           {/* Attendance */}
           <TabsContent value="attendance" className="mt-4 space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-muted-foreground">{attendance?.total ?? 0} records</p>
+              <ExportButton data={(attendance?.recent ?? []).map((a) => ({ Date: a.date, Status: a.status }))} fileName={`attendance-${currentChild?.fullName ?? "child"}`} sheetName="Attendance" />
+            </div>
             {childDataLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : attendance ? (
