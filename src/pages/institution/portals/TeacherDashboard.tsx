@@ -291,8 +291,9 @@ export default function TeacherDashboard() {
 
         {/* ── Student Progress ── */}
         <TabsContent value="progress" className="mt-4">
-          <div className="mb-3">
+          <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{students.length} student{students.length !== 1 ? "s" : ""} enrolled</p>
+            <ExportButton data={studentProgress.map((s) => ({ Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount, Joined: s.created_at }))} fileName="student-progress" sheetName="Students" />
           </div>
           {students.length === 0 ? (
             <EmptyState icon={Users} message="No students enrolled yet" />
