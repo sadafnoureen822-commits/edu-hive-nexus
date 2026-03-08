@@ -23,7 +23,7 @@ const navSections = [
     items: [
       { href: "/admin/institutions", label: "All Institutions",  icon: Building2 },
       { href: "/admin/domains",      label: "Domain Mapping",    icon: Globe },
-      { href: "/admin/modules",      label: "Module Control",    icon: Settings2 },
+      { href: "/admin/module-control", label: "Module Control",    icon: Settings2 },
     ],
   },
   {
