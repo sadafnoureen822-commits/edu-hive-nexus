@@ -116,14 +116,28 @@ export default function AdminDashboard() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">Super Admin Dashboard</h1>
           <p className="text-muted-foreground mt-1">Platform-wide management and revenue overview</p>
         </div>
-        <Button onClick={() => navigate("/admin/institutions")} className="gap-2">
-          <Building2 className="h-4 w-4" /> Manage Institutions
-        </Button>
+        <div className="flex items-center gap-2">
+          <AIDataExport
+            contextData={[
+              ...recentInstitutions.map((i) => ({ Section: "Institutions", Name: i.name, Slug: i.slug, Status: i.status, Created: i.created_at })),
+              { Section: "Stats", Metric: "Total Institutions", Value: stats.totalInstitutions },
+              { Section: "Stats", Metric: "Active Institutions", Value: stats.activeInstitutions },
+              { Section: "Stats", Metric: "Total Members", Value: stats.totalMembers },
+              { Section: "Stats", Metric: "Total Revenue", Value: stats.totalRevenue },
+            ]}
+            label="AI Export"
+            exportTitle="Platform Dashboard Report"
+            fileName="admin-dashboard"
+          />
+          <Button onClick={() => navigate("/admin/institutions")} className="gap-2">
+            <Building2 className="h-4 w-4" /> Manage Institutions
+          </Button>
+        </div>
       </div>
 
       {/* Stat Cards */}
