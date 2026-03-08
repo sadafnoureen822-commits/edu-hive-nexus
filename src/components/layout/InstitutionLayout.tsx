@@ -165,7 +165,7 @@ export default function InstitutionLayout() {
   // Block non-admin roles from accessing admin-only paths
   useEffect(() => {
     if (!slug || loading || !membership || isPlatformAdmin) return;
-    if (role === "admin" || role === "staff") return;
+    if (role === "admin" || role === "principal" || role === "exam_controller") return;
 
     const basePath = `/${slug}`;
     const relativePath = location.pathname.replace(basePath, "");
