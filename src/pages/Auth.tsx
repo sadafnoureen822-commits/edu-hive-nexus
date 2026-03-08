@@ -6,39 +6,65 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, School, GraduationCap } from "lucide-react";
+import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, School, GraduationCap, Users, ArrowLeft, ChevronRight } from "lucide-react";
 
-const ROLE_CARDS = [
+type PortalKey = "superadmin" | "admin" | "teacher" | "student" | "parent" | null;
+
+const PORTAL_CARDS = [
   {
-    key: "superadmin",
+    key: "superadmin" as PortalKey,
     label: "Super Admin",
     sub: "Platform control",
     Icon: Shield,
-    accent: "hover:border-primary hover:bg-primary/5 hover:shadow-md",
-    iconColor: "text-primary",
-    iconBg: "bg-primary/10",
+    color: "from-blue-600 to-blue-700",
+    lightBg: "bg-blue-50 border-blue-200",
+    iconColor: "text-blue-600",
+    iconBg: "bg-blue-100",
   },
   {
-    key: "admin",
+    key: "admin" as PortalKey,
     label: "Institution Admin",
     sub: "Manage school",
     Icon: School,
-    accent: "hover:border-chart-2 hover:bg-chart-2/5 hover:shadow-md",
-    iconColor: "text-chart-2",
-    iconBg: "bg-chart-2/10",
+    color: "from-emerald-600 to-emerald-700",
+    lightBg: "bg-emerald-50 border-emerald-200",
+    iconColor: "text-emerald-600",
+    iconBg: "bg-emerald-100",
   },
   {
-    key: "role",
-    label: "Teacher / Student",
-    sub: "Role portal",
+    key: "teacher" as PortalKey,
+    label: "Teacher",
+    sub: "Classroom portal",
     Icon: GraduationCap,
-    accent: "hover:border-chart-3 hover:bg-chart-3/5 hover:shadow-md",
-    iconColor: "text-chart-3",
-    iconBg: "bg-chart-3/10",
+    color: "from-violet-600 to-violet-700",
+    lightBg: "bg-violet-50 border-violet-200",
+    iconColor: "text-violet-600",
+    iconBg: "bg-violet-100",
+  },
+  {
+    key: "student" as PortalKey,
+    label: "Student",
+    sub: "Learning portal",
+    Icon: User,
+    color: "from-orange-500 to-orange-600",
+    lightBg: "bg-orange-50 border-orange-200",
+    iconColor: "text-orange-500",
+    iconBg: "bg-orange-100",
+  },
+  {
+    key: "parent" as PortalKey,
+    label: "Parent",
+    sub: "Child progress",
+    Icon: Users,
+    color: "from-rose-500 to-rose-600",
+    lightBg: "bg-rose-50 border-rose-200",
+    iconColor: "text-rose-500",
+    iconBg: "bg-rose-100",
   },
 ];
 
 export default function Auth() {
+  const [selectedPortal, setSelectedPortal] = useState<PortalKey>(null);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,86 +77,68 @@ export default function Auth() {
   const { toast } = useToast();
   const from = (location.state as any)?.from?.pathname || null;
 
-  // Navigate to the correct portal — runs after login OR role card click
-  const navigateByRole = async (userId: string) => {
-    const [platformRes, memberRes] = await Promise.all([
-      supabase.from("platform_roles").select("role").eq("user_id", userId).maybeSingle(),
-      supabase
-        .from("institution_members")
-        .select("role, institutions!institution_id(slug)")
-        .eq("user_id", userId)
-        .limit(1),
-    ]);
+  const activePortal = PORTAL_CARDS.find(p => p.key === selectedPortal);
 
-    if (platformRes.data?.role === "platform_admin") {
+  // Navigate to the correct portal based on actual DB role
+  const navigateByRole = async (userId: string, hintRole?: PortalKey) => {
+    // Check platform admin first
+    const { data: platformData } = await supabase
+      .from("platform_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (platformData?.role === "platform_admin") {
       navigate("/admin", { replace: true });
       return;
     }
 
-    const memberships = memberRes.data as any[] | null;
-    if (memberships && memberships.length > 0) {
-      const m = memberships[0];
-      const slug = m.institutions?.slug;
-      const role = m.role;
-      if (slug) {
-        if (role === "student") navigate(`/${slug}/student`, { replace: true });
-        else if (role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
-        else if (role === "parent") navigate(`/${slug}/parent`, { replace: true });
-        else navigate(`/${slug}`, { replace: true });
-        return;
-      }
-    }
-
-    // Fallback
-    navigate("/admin", { replace: true });
-  };
-
-  // Role card click: if session exists navigate, else show hint
-  const handleRoleClick = async (roleKey: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-      toast({
-        title: "Sign in first",
-        description: "Enter your email & password above, then click Sign In.",
-      });
-      return;
-    }
-
-    const userId = session.user.id;
-
-    if (roleKey === "superadmin") {
-      navigate("/admin", { replace: true });
-      return;
-    }
-
-    const { data: memberships } = await supabase
+    // Get institution membership
+    const { data: memberships, error } = await supabase
       .from("institution_members")
-      .select("role, institutions!institution_id(slug)")
+      .select("role, institution_id")
       .eq("user_id", userId)
       .limit(1);
 
-    if (!memberships?.length) {
+    if (error) {
+      console.error("Error fetching memberships:", error);
+    }
+
+    if (!memberships || memberships.length === 0) {
+      // No membership — if they selected superadmin portal, go to /admin
+      if (hintRole === "superadmin") {
+        navigate("/admin", { replace: true });
+        return;
+      }
       toast({
         title: "No institution found",
-        description: "You are not a member of any institution.",
+        description: "You are not assigned to any institution yet.",
         variant: "destructive",
       });
       return;
     }
 
-    const m = memberships[0] as any;
-    const slug = m.institutions?.slug;
+    const m = memberships[0];
+    const institutionId = m.institution_id;
     const role = m.role;
-    if (!slug) return;
 
-    if (roleKey === "admin") {
-      navigate(`/${slug}`, { replace: true });
-    } else if (roleKey === "role") {
-      if (role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
-      else if (role === "parent") navigate(`/${slug}/parent`, { replace: true });
-      else navigate(`/${slug}/student`, { replace: true });
+    // Get the institution slug
+    const { data: institution } = await supabase
+      .from("institutions")
+      .select("slug")
+      .eq("id", institutionId)
+      .maybeSingle();
+
+    const slug = institution?.slug;
+    if (!slug) {
+      toast({ title: "Institution not found", variant: "destructive" });
+      return;
     }
+
+    if (role === "student") navigate(`/${slug}/student`, { replace: true });
+    else if (role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
+    else if (role === "parent") navigate(`/${slug}/parent`, { replace: true });
+    else navigate(`/${slug}`, { replace: true });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -161,11 +169,10 @@ export default function Auth() {
       if (data.user) {
         setLoading(false);
         toast({ title: "Welcome back!", description: "Redirecting to your portal..." });
-        // If there's an intended destination, go there
         if (from && from !== "/auth") {
           navigate(from, { replace: true });
         } else {
-          await navigateByRole(data.user.id);
+          await navigateByRole(data.user.id, selectedPortal);
         }
       }
     } else {
@@ -194,8 +201,51 @@ export default function Auth() {
     }
   };
 
+  // ── Portal selection screen ──────────────────────────────────────────────
+  if (!selectedPortal) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-secondary/40 to-background flex items-center justify-center p-4">
+        <div className="w-full max-w-lg space-y-6">
+          {/* Brand */}
+          <div className="flex items-center justify-center gap-3">
+            <div className="feature-icon">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <h1 className="text-xl font-display font-bold text-foreground">EduCloud Platform</h1>
+          </div>
+
+          <div className="text-center">
+            <h2 className="text-2xl font-display font-bold text-foreground">Select Your Portal</h2>
+            <p className="text-sm text-muted-foreground mt-1">Choose your role to sign in to the right portal</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            {PORTAL_CARDS.map(({ key, label, sub, Icon, lightBg, iconColor, iconBg }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSelectedPortal(key)}
+                className={`flex items-center gap-4 p-4 rounded-2xl border-2 ${lightBg} text-left transition-all duration-150 hover:scale-[1.01] hover:shadow-md active:scale-[0.99] group`}
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+                  <Icon className={`h-6 w-6 ${iconColor}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground">{sub}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Login form (after portal selected) ──────────────────────────────────
   return (
-    <div className="min-h-screen bg-secondary/30 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-secondary/40 to-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-5">
 
         {/* Brand */}
@@ -205,6 +255,26 @@ export default function Auth() {
           </div>
           <h1 className="text-xl font-display font-bold text-foreground">EduCloud Platform</h1>
         </div>
+
+        {/* Portal Badge */}
+        {activePortal && (
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border-2 ${activePortal.lightBg}`}>
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${activePortal.iconBg}`}>
+              <activePortal.Icon className={`h-5 w-5 ${activePortal.iconColor}`} />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground">Signing in as</p>
+              <p className="text-sm font-bold text-foreground">{activePortal.label}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedPortal(null)}
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+            >
+              <ArrowLeft className="h-3 w-3" /> Change
+            </button>
+          </div>
+        )}
 
         {/* Login Card */}
         <Card className="border-border/60 shadow-lg bg-card">
@@ -333,29 +403,6 @@ export default function Auth() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Role Portal Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          {ROLE_CARDS.map(({ key, label, sub, Icon, accent, iconColor, iconBg }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => handleRoleClick(key)}
-              className={`group flex flex-col items-center gap-2 p-4 rounded-2xl border border-border/50 bg-card text-center transition-all duration-200 cursor-pointer ${accent}`}
-            >
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg} transition-colors`}>
-                <Icon className={`h-4 w-4 ${iconColor}`} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-foreground leading-tight">{label}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-        <p className="text-center text-[10px] text-muted-foreground -mt-2">
-          Sign in first · then tap your role to go to your portal
-        </p>
       </div>
     </div>
   );
