@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Award, Download, QrCode, Shield, Calendar, Hash, ExternalLink, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import QRCode from "qrcode";
 import { useEffect } from "react";
 
 export default function StudentCertificatesPage() {
