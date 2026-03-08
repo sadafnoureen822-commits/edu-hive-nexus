@@ -29,7 +29,8 @@ export default function AdminLayout() {
     await signOut();
     navigate("/auth", { replace: true });
   };
-    <div className="min-h-screen bg-background flex">
+
+  return (
       {/* Sidebar — fixed so it doesn't scroll with content */}
       <aside className="fixed inset-y-0 left-0 w-64 border-r border-border bg-card flex flex-col z-30">
         <div className="p-6 border-b border-border">
