@@ -126,6 +126,7 @@ const PricingSection = () => {
                 variant={plan.popular ? "heroOutline" : "default"}
                 className={`w-full ${plan.popular ? "bg-white text-primary hover:bg-white/90" : ""}`}
                 size="lg"
+                onClick={() => navigate("/auth")}
               >
                 {plan.price === "Custom" ? "Contact Sales" : "Start Free Trial"}
               </Button>
