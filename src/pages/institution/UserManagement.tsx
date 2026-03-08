@@ -208,7 +208,7 @@ export default function UserManagement() {
           { label: "Teachers", count: countByRole("teacher"), icon: UserCheck, color: "text-accent", bg: "bg-accent/10" },
           { label: "Students", count: countByRole("student"), icon: GraduationCap, color: "text-primary", bg: "bg-primary/10" },
           { label: "Parents", count: countByRole("parent"), icon: BookUser, color: "text-orange-600", bg: "bg-orange-500/10" },
-          { label: "Staff/Admin", count: countByRole("admin") + countByRole("staff"), icon: Shield, color: "text-muted-foreground", bg: "bg-muted" },
+          { label: "Staff/Admin", count: countByRole("admin", "principal", "exam_controller"), icon: Shield, color: "text-muted-foreground", bg: "bg-muted" },
         ].map((stat) => (
           <Card key={stat.label} className="border-border/50 cursor-pointer hover:shadow-sm transition-shadow" onClick={() => setActiveTab(stat.label === "All" ? "all" : stat.label === "Staff/Admin" ? "admin" : stat.label.toLowerCase())}>
             <CardContent className="pt-3 pb-3">
