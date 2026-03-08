@@ -25,10 +25,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Users, UserPlus, Search, MoreHorizontal, Trash2, Pencil,
-  Eye, EyeOff, Loader2, GraduationCap, User, Shield, School, UserCog,
+  Loader2, GraduationCap, User, Shield, School, UserCog, Building2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { z } from "zod";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface MemberRow {
@@ -41,6 +40,7 @@ interface MemberRow {
   institutions?: { name: string; slug: string } | null;
 }
 interface Institution { id: string; name: string; slug: string; }
+interface Profile { user_id: string; full_name: string | null; }
 
 const ALL_ROLES = ["admin", "teacher", "student", "principal", "parent", "exam_controller"] as const;
 type AssignableRole = typeof ALL_ROLES[number];
@@ -54,16 +54,6 @@ const ROLE_META: Record<string, { label: string; icon: React.ElementType; color:
   exam_controller: { label: "Exam Controller",   icon: UserCog,       color: "bg-rose-500/10 text-rose-700 border-rose-200" },
 };
 
-// ── Validation ─────────────────────────────────────────────────────────────────
-const createUserSchema = z.object({
-  fullName: z.string().trim().min(2, "Full name must be at least 2 characters").max(100),
-  email:    z.string().trim().email("Invalid email address").max(255),
-  password: z.string().min(6, "Password must be at least 6 characters").max(72).or(z.literal("")),
-  instId:   z.string().uuid("Please select an institution"),
-  role:     z.enum(ALL_ROLES),
-});
-
-// ── Component ──────────────────────────────────────────────────────────────────
 export default function MembersPage() {
   const qc = useQueryClient();
 
@@ -72,19 +62,17 @@ export default function MembersPage() {
   const [filterRole,  setFilterRole]  = useState("all");
   const [filterInst,  setFilterInst]  = useState("all");
 
-  // Create dialog
-  const [dialogOpen,   setDialogOpen]   = useState(false);
-  const [fullName,     setFullName]     = useState("");
-  const [email,        setEmail]        = useState("");
-  const [password,     setPassword]     = useState("");
-  const [showPwd,      setShowPwd]      = useState(false);
-  const [instId,       setInstId]       = useState("");
-  const [role,         setRole]         = useState<AssignableRole>("student");
-  const [createBusy,   setCreateBusy]   = useState(false);
+  // Add member dialog
+  const [dialogOpen,   setDialogOpen]  = useState(false);
+  const [userSearch,   setUserSearch]  = useState("");
+  const [selUserId,    setSelUserId]   = useState("");
+  const [selInstId,    setSelInstId]   = useState("");
+  const [selRole,      setSelRole]     = useState<AssignableRole>("student");
+  const [addBusy,      setAddBusy]     = useState(false);
 
   // Edit role dialog
-  const [editTarget,   setEditTarget]   = useState<MemberRow | null>(null);
-  const [editRole,     setEditRole]     = useState<AssignableRole>("student");
+  const [editTarget,   setEditTarget]  = useState<MemberRow | null>(null);
+  const [editRole,     setEditRole]    = useState<AssignableRole>("student");
 
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState<MemberRow | null>(null);
@@ -121,6 +109,14 @@ export default function MembersPage() {
     },
   });
 
+  const { data: profiles = [] } = useQuery({
+    queryKey: ["members-profiles"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("user_id, full_name").order("full_name");
+      return (data ?? []) as Profile[];
+    },
+  });
+
   // ── Mutations ────────────────────────────────────────────────────────────────
   const editMutation = useMutation({
     mutationFn: async ({ id, newRole }: { id: string; newRole: string }) => {
@@ -129,7 +125,7 @@ export default function MembersPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Role updated successfully");
+      toast.success("Role updated");
       qc.invalidateQueries({ queryKey: ["members-page"] });
       setEditTarget(null);
     },
@@ -149,72 +145,47 @@ export default function MembersPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // ── Create User ──────────────────────────────────────────────────────────────
-  const handleCreate = async () => {
-    const parsed = createUserSchema.safeParse({ fullName, email, password, instId, role });
-    if (!parsed.success) {
-      toast.error(parsed.error.errors[0].message);
-      return;
-    }
+  // ── Add Member ───────────────────────────────────────────────────────────────
+  const handleAddMember = async () => {
+    if (!selUserId)  return toast.error("Please select a user");
+    if (!selInstId)  return toast.error("Please select an institution");
 
-    setCreateBusy(true);
+    setAddBusy(true);
     try {
-      const pwd = password || Math.random().toString(36).slice(-8) + "Aa1!";
-      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password: pwd,
-        options: { data: { full_name: fullName.trim() } },
-      });
-
-      if (signUpErr) {
-        if (signUpErr.message.toLowerCase().includes("already registered") ||
-            signUpErr.message.toLowerCase().includes("already exists")) {
-          toast.warning("That email is already registered. Use Role Assignment to assign them.", { duration: 6000 });
-          setCreateBusy(false);
-          return;
-        }
-        throw signUpErr;
-      }
-
-      const userId = signUpData?.user?.id;
-      if (!userId) {
-        toast.warning("User may already exist — check Role Assignment page.");
-        setCreateBusy(false);
-        return;
-      }
-
-      await supabase.from("profiles").upsert(
-        { user_id: userId, full_name: fullName.trim() },
-        { onConflict: "user_id" }
-      );
-
+      // Check if already a member
       const { data: existing } = await supabase
         .from("institution_members").select("id")
-        .eq("user_id", userId).eq("institution_id", instId).maybeSingle();
+        .eq("user_id", selUserId).eq("institution_id", selInstId).maybeSingle();
 
       if (existing) {
-        await supabase.from("institution_members")
-          .update({ role: role as any }).eq("id", existing.id);
-        toast.success(`Role updated for existing user.`);
-      } else {
-        const { error } = await supabase.from("institution_members")
-          .insert({ user_id: userId, institution_id: instId, role: role as any });
+        const { error } = await supabase
+          .from("institution_members").update({ role: selRole as any }).eq("id", existing.id);
         if (error) throw error;
-        toast.success(`${fullName} created as ${ROLE_META[role].label}!`);
+        toast.success("Member already exists — role updated.");
+      } else {
+        const { error } = await supabase.from("institution_members").insert({
+          user_id: selUserId,
+          institution_id: selInstId,
+          role: selRole as any,
+        });
+        if (error) throw error;
+        const uName = profiles.find((p) => p.user_id === selUserId)?.full_name ?? "User";
+        const iName = institutions.find((i) => i.id === selInstId)?.name ?? "institution";
+        toast.success(`${uName} added to ${iName} as ${ROLE_META[selRole].label}`);
       }
 
       qc.invalidateQueries({ queryKey: ["members-page"] });
-      setDialogOpen(false);
-      resetForm();
+      closeDialog();
     } catch (err: any) {
-      toast.error(err.message || "Failed to create user");
+      toast.error(err.message || "Failed to add member");
     } finally {
-      setCreateBusy(false);
+      setAddBusy(false);
     }
   };
 
-  const resetForm = () => {
-    setFullName(""); setEmail(""); setPassword(""); setInstId(""); setRole("student"); setShowPwd(false);
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setUserSearch(""); setSelUserId(""); setSelInstId(""); setSelRole("student");
   };
 
   // ── Filtered ─────────────────────────────────────────────────────────────────
@@ -225,6 +196,10 @@ export default function MembersPage() {
     const matchInst = filterInst === "all" || m.institution_id === filterInst;
     return matchQ && matchRole && matchInst;
   });
+
+  const filteredProfiles = profiles.filter((p) =>
+    !userSearch || p.full_name?.toLowerCase().includes(userSearch.toLowerCase())
+  );
 
   const counts = ALL_ROLES.reduce((acc, r) => {
     acc[r] = members.filter((m) => m.role === r).length;
@@ -240,11 +215,11 @@ export default function MembersPage() {
             <Users className="h-7 w-7 text-primary" />
             Members
           </h1>
-          <p className="text-muted-foreground mt-1">All members across all institutions</p>
+          <p className="text-muted-foreground mt-1">Manage institution memberships across the platform</p>
         </div>
-        <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="gap-2">
+        <Button onClick={() => setDialogOpen(true)} className="gap-2">
           <UserPlus className="h-4 w-4" />
-          Create New User
+          Add New Member
         </Button>
       </div>
 
@@ -335,15 +310,21 @@ export default function MembersPage() {
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-12 text-center">No members found.</p>
+            <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+              <Users className="h-10 w-10 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">No members found.</p>
+              <Button size="sm" variant="outline" onClick={() => setDialogOpen(true)} className="gap-2">
+                <UserPlus className="h-3.5 w-3.5" /> Add First Member
+              </Button>
+            </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
+                  <TableHead>Member</TableHead>
                   <TableHead>Institution</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Joined</TableHead>
+                  <TableHead>Added</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -355,17 +336,20 @@ export default function MembersPage() {
                     <TableRow key={m.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center ${meta.color}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${meta.color}`}>
                             <Icon className="h-3.5 w-3.5" />
                           </div>
                           <div>
-                            <p className="font-medium text-sm">{m.full_name || "—"}</p>
+                            <p className="font-medium text-sm">{m.full_name || "Unknown User"}</p>
                             <p className="text-xs text-muted-foreground font-mono">{m.user_id.slice(0, 8)}…</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm">{m.institutions?.name ?? "—"}</span>
+                        <div className="flex items-center gap-1.5 text-sm">
+                          <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          {m.institutions?.name ?? "—"}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-xs ${meta.color}`}>
@@ -384,16 +368,14 @@ export default function MembersPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => { setEditTarget(m); setEditRole(m.role as AssignableRole); }}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              Change Role
+                              <Pencil className="h-4 w-4 mr-2" /> Change Role
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
                               onClick={() => setDeleteTarget(m)}
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Remove
+                              <Trash2 className="h-4 w-4 mr-2" /> Remove
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -407,65 +389,63 @@ export default function MembersPage() {
         </CardContent>
       </Card>
 
-      {/* ── Create User Dialog ── */}
-      <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm(); }}>
+      {/* ── Add Member Dialog ── */}
+      <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) closeDialog(); else setDialogOpen(true); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="h-5 w-5 text-primary" />
-              Create New User
+              Add New Member
             </DialogTitle>
             <DialogDescription>
-              Register a new user and assign them to an institution with a specific role.
+              Select an existing user, choose their institution and role.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 mt-2">
+            {/* User picker */}
             <div className="space-y-1.5">
-              <Label>Full Name <span className="text-destructive">*</span></Label>
-              <Input
-                placeholder="e.g. John Smith"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                maxLength={100}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Email Address <span className="text-destructive">*</span></Label>
-              <Input
-                type="email"
-                placeholder="user@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                maxLength={255}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Password <span className="text-muted-foreground text-xs">(optional — auto-generated if blank)</span></Label>
-              <div className="relative">
+              <Label>User <span className="text-destructive">*</span></Label>
+              <div className="relative mb-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  type={showPwd ? "text" : "password"}
-                  placeholder="Min 6 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  maxLength={72}
-                  className="pr-10"
+                  placeholder="Search by name…"
+                  value={userSearch}
+                  onChange={(e) => { setUserSearch(e.target.value); setSelUserId(""); }}
+                  className="pl-9"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPwd((p) => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
               </div>
+              {userSearch && (
+                <div className="border border-border rounded-md max-h-40 overflow-y-auto">
+                  {filteredProfiles.length === 0 ? (
+                    <p className="text-xs text-muted-foreground p-3 text-center">No users found</p>
+                  ) : (
+                    filteredProfiles.slice(0, 8).map((p) => (
+                      <button
+                        key={p.user_id}
+                        type="button"
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors flex items-center gap-2 ${selUserId === p.user_id ? "bg-primary/10 text-primary" : ""}`}
+                        onClick={() => { setSelUserId(p.user_id); setUserSearch(p.full_name ?? p.user_id.slice(0, 8)); }}
+                      >
+                        <User className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                        <span>{p.full_name || "Unnamed"}</span>
+                        <span className="text-xs text-muted-foreground font-mono ml-auto">{p.user_id.slice(0, 6)}…</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+              {selUserId && (
+                <p className="text-xs text-green-600 flex items-center gap-1">
+                  <User className="h-3 w-3" /> Selected: {profiles.find(p => p.user_id === selUserId)?.full_name || selUserId.slice(0, 8)}
+                </p>
+              )}
             </div>
 
+            {/* Institution */}
             <div className="space-y-1.5">
               <Label>Institution <span className="text-destructive">*</span></Label>
-              <Select value={instId} onValueChange={setInstId}>
+              <Select value={selInstId} onValueChange={setSelInstId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select institution…" />
                 </SelectTrigger>
@@ -477,12 +457,11 @@ export default function MembersPage() {
               </Select>
             </div>
 
+            {/* Role */}
             <div className="space-y-1.5">
               <Label>Role <span className="text-destructive">*</span></Label>
-              <Select value={role} onValueChange={(v) => setRole(v as AssignableRole)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+              <Select value={selRole} onValueChange={(v) => setSelRole(v as AssignableRole)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ALL_ROLES.map((r) => (
                     <SelectItem key={r} value={r}>{ROLE_META[r].label}</SelectItem>
@@ -492,12 +471,10 @@ export default function MembersPage() {
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="flex-1" onClick={() => { setDialogOpen(false); resetForm(); }}>
-                Cancel
-              </Button>
-              <Button className="flex-1 gap-2" onClick={handleCreate} disabled={createBusy}>
-                {createBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                Create User
+              <Button variant="outline" className="flex-1" onClick={closeDialog}>Cancel</Button>
+              <Button className="flex-1 gap-2" onClick={handleAddMember} disabled={addBusy}>
+                {addBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+                Add Member
               </Button>
             </div>
           </div>
@@ -544,7 +521,7 @@ export default function MembersPage() {
             <AlertDialogTitle>Remove Member</AlertDialogTitle>
             <AlertDialogDescription>
               Remove <strong>{deleteTarget?.full_name || "this user"}</strong> from{" "}
-              <strong>{deleteTarget?.institutions?.name}</strong>? This only removes their institution access.
+              <strong>{deleteTarget?.institutions?.name}</strong>? This only removes their membership, not their account.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
