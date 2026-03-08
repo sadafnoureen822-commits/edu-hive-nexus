@@ -180,10 +180,11 @@ export default function RoleAssignmentPage() {
 
       const adminIds = (platformAdmins ?? []).map((r) => r.user_id);
 
-      let query = supabase.from("institution_members").delete();
+      let query = supabase.from("institution_members").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
       if (adminIds.length > 0) {
-        // Delete all members whose user_id is NOT in the platform admins list
-        query = query.not("user_id", "in", `(${adminIds.join(",")})`);
+        // Exclude platform admin memberships using the correct array format
+        query = query.not("user_id", "in", `(${adminIds.map((id) => `"${id}"`).join(",")})`);
       }
 
       const { error } = await query;
