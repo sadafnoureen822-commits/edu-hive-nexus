@@ -47,7 +47,7 @@ export default function TeacherAssignmentsPage() {
     if (!form.title.trim()) return toast.error("Title is required");
     try {
       const payload = { title: form.title, description: form.description || null, instructions: form.instructions || null, total_marks: parseFloat(form.total_marks) || 100, passing_marks: parseFloat(form.passing_marks) || 40, due_date: form.due_date || null, status: "active" };
-      if (editing) { await updateAssignment.mutateAsync({ id: editing.id, ...payload }); toast.success("Assignment updated"); }
+      if (editing) { await updateAssignment.mutateAsync({ id: editing.id, ...payload, status: payload.status as "active" | "closed" | "draft" }); toast.success("Assignment updated"); }
       else { await createAssignment.mutateAsync(payload); toast.success("Assignment created"); }
       setDialog(false);
     } catch (e: any) { toast.error(e.message); }
