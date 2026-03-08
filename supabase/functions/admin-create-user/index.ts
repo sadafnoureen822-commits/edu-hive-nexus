@@ -18,14 +18,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Admin client using service role — can create users + bypass RLS
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    // Verify caller is a platform admin
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
@@ -39,7 +37,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Only platform admins can create users
     const { data: platformRole } = await supabaseAdmin
       .from("platform_roles")
       .select("role")
@@ -61,46 +58,40 @@ Deno.serve(async (req) => {
       });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
     const pwd = password || (Math.random().toString(36).slice(-8) + "Aa1!");
 
-    // Create the user with service role (does NOT affect caller session)
-    const { data: newUserData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email: email.trim().toLowerCase(),
-      password: pwd,
-      email_confirm: true,
-      user_metadata: { full_name: full_name?.trim() ?? "" },
-    });
-
+    // Step 1: Check if user already exists by searching
     let userId: string;
     let alreadyExisted = false;
 
-    if (createError) {
-      // User might already exist — look them up by email using admin list with filter
-      if (
-        createError.message.toLowerCase().includes("already registered") ||
-        createError.message.toLowerCase().includes("already exists") ||
-        createError.message.toLowerCase().includes("unique constraint")
-      ) {
-        // Search by email using the filter parameter
-        const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-        const normalizedEmail = email.trim().toLowerCase();
-        const existing = listData?.users?.find(
-          (u) => u.email?.toLowerCase() === normalizedEmail
-        );
-        if (!existing) {
-          // Fallback: try page 2+ (shouldn't be needed for most projects)
-          return new Response(JSON.stringify({ error: "User already exists but could not be located. Please assign role manually." }), {
-            status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        userId = existing.id;
-        alreadyExisted = true;
-      } else {
+    const { data: searchData } = await supabaseAdmin.auth.admin.listUsers({
+      perPage: 1000,
+    });
+
+    const existingAuthUser = searchData?.users?.find(
+      (u) => u.email?.toLowerCase() === normalizedEmail
+    );
+
+    if (existingAuthUser) {
+      // User exists — just assign/update their role
+      userId = existingAuthUser.id;
+      alreadyExisted = true;
+    } else {
+      // Create new user
+      const { data: newUserData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: normalizedEmail,
+        password: pwd,
+        email_confirm: true,
+        user_metadata: { full_name: full_name?.trim() ?? "" },
+      });
+
+      if (createError) {
         return new Response(JSON.stringify({ error: createError.message }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-    } else {
+
       userId = newUserData.user!.id;
     }
 
@@ -110,7 +101,7 @@ Deno.serve(async (req) => {
       { onConflict: "user_id" }
     );
 
-    // Upsert institution membership
+    // Check if membership already exists
     const { data: existingMember } = await supabaseAdmin
       .from("institution_members")
       .select("id")
