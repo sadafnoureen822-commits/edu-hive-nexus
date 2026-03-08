@@ -100,7 +100,7 @@ const parentNavSections = [
     items: [{ href: "/parent", label: "My Children", icon: LayoutDashboard }],
   },
   {
-    label: "Announcements",
+    label: "School",
     items: [
       { href: "/announcements", label: "Announcements", icon: Megaphone },
     ],
@@ -124,6 +124,35 @@ const studentNavSections = [
   },
   {
     label: "Info",
+    items: [
+      { href: "/announcements", label: "Announcements", icon: Megaphone },
+    ],
+  },
+];
+
+const principalNavSections = [
+  {
+    label: "Overview",
+    items: [{ href: "/principal", label: "Principal Dashboard", icon: LayoutDashboard }],
+  },
+  {
+    label: "Oversight",
+    items: [
+      { href: "/academics", label: "Classes & Subjects", icon: GraduationCap },
+      { href: "/exams", label: "Examinations", icon: ClipboardList },
+      { href: "/marks", label: "Marks & Results", icon: TrendingUp },
+      { href: "/attendance", label: "Attendance", icon: CalendarCheck },
+    ],
+  },
+  {
+    label: "People",
+    items: [
+      { href: "/student-profiles", label: "Students", icon: UserCheck },
+      { href: "/users", label: "Staff", icon: Users },
+    ],
+  },
+  {
+    label: "Communication",
     items: [
       { href: "/announcements", label: "Announcements", icon: Megaphone },
     ],
@@ -163,7 +192,8 @@ export default function InstitutionLayout() {
       if (role === "student") navigate(`${basePath}/student`, { replace: true });
       else if (role === "teacher") navigate(`${basePath}/teacher`, { replace: true });
       else if (role === "parent") navigate(`${basePath}/parent`, { replace: true });
-      // admin stays at basePath (dashboard)
+      else if (role === "principal") navigate(`${basePath}/principal`, { replace: true });
+      // admin + exam_controller stays at basePath (dashboard)
     }
   }, [slug, loading, membership, role, location.pathname, navigate]);
 
@@ -237,6 +267,7 @@ export default function InstitutionLayout() {
     effectiveRole === "student" ? studentNavSections
     : effectiveRole === "teacher" ? teacherNavSections
     : effectiveRole === "parent" ? parentNavSections
+    : effectiveRole === "principal" ? principalNavSections
     : adminNavSections;
 
   const isActive = (href: string) => {
