@@ -116,7 +116,7 @@ export default function TeacherDashboard() {
           </h1>
           <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
-        <ExportButton data={allExportData} fileName="teacher-portal-full-export" sheetName="Teacher Data" label="Download All" />
+        <AIDataExport contextData={allExportData} label="AI Export" exportTitle="Teacher Portal Data" fileName="teacher-portal-export" />
       </div>
 
       {/* Stats */}
