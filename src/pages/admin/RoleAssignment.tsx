@@ -88,6 +88,8 @@ export default function RoleAssignmentPage() {
 
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
+  const [removeAllOpen, setRemoveAllOpen] = useState(false);
+  const [removeAllLoading, setRemoveAllLoading] = useState(false);
 
   // ── Queries ──────────────────────────────────────────────────────────────
   const { data: members = [], isLoading } = useQuery({
