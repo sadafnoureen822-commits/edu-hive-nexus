@@ -1,1 +1,13 @@
 project_id = "jpdrwnuvtqvbdjbzvwah"
+
+[functions.send-notification]
+verify_jwt = true
+
+[functions.generate-pdf]
+verify_jwt = false
+
+[functions.auto-billing]
+verify_jwt = true
+
+[functions.send-whatsapp]
+verify_jwt = true
