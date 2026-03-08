@@ -30,7 +30,8 @@ const PORTAL_META: Record<PortalSlug, {
     Icon: Shield,
     lightBg: "bg-blue-50 border-blue-200", iconColor: "text-blue-600", iconBg: "bg-blue-100",
     dbRoles: [],
-    allowSignup: false,
+    allowSignup: true,
+    signupNote: "Your account will be granted full Super Admin privileges immediately after sign up.",
   },
   admin: {
     label: "Institution Admin", sub: "Manage school",
