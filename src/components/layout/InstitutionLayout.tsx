@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation, useParams } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTenant } from "@/contexts/TenantContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   DollarSign, Megaphone, Bell, Activity, TrendingUp, Key, ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const adminNavSections = [
   {
@@ -89,6 +89,7 @@ const teacherNavSections = [
       { href: "/assignments", label: "Assignments", icon: PenSquare },
       { href: "/quizzes", label: "Quizzes", icon: HelpCircle },
       { href: "/attendance", label: "Attendance", icon: CalendarCheck },
+      { href: "/marks", label: "Marks & Results", icon: TrendingUp },
     ],
   },
 ];
@@ -97,6 +98,12 @@ const parentNavSections = [
   {
     label: "Overview",
     items: [{ href: "/parent", label: "My Children", icon: LayoutDashboard }],
+  },
+  {
+    label: "Announcements",
+    items: [
+      { href: "/announcements", label: "Announcements", icon: Megaphone },
+    ],
   },
 ];
 
@@ -112,16 +119,63 @@ const studentNavSections = [
       { href: "/assignments", label: "Assignments", icon: PenSquare },
       { href: "/quizzes", label: "Quizzes", icon: HelpCircle },
       { href: "/certificates", label: "My Certificates", icon: Award },
+      { href: "/attendance", label: "My Attendance", icon: CalendarCheck },
     ],
   },
+  {
+    label: "Info",
+    items: [
+      { href: "/announcements", label: "Announcements", icon: Megaphone },
+    ],
+  },
+];
+
+// Admin-only paths that non-admin roles cannot access
+const ADMIN_ONLY_PATHS = [
+  "/users", "/admissions", "/student-profiles", "/promotions",
+  "/academics", "/timetable", "/exams", "/marks", "/fees",
+  "/communication", "/notifications", "/cms", "/billing",
+  "/api-keys", "/activity-logs", "/settings", "/profile",
 ];
 
 export default function InstitutionLayout() {
   const { slug } = useParams<{ slug: string }>();
   const { institution, membership, loading, error } = useTenant();
-  const { user, signOut } = useAuth();
+  const { user, isPlatformAdmin, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+
+  const role = membership?.role ?? null;
+
+  // Auto-redirect to the correct home page for the role
+  useEffect(() => {
+    if (!slug || loading || !membership) return;
+    const basePath = `/${slug}`;
+    const isExactBase = location.pathname === basePath || location.pathname === `${basePath}/`;
+
+    if (isExactBase) {
+      if (role === "student") navigate(`${basePath}/student`, { replace: true });
+      else if (role === "teacher") navigate(`${basePath}/teacher`, { replace: true });
+      else if (role === "parent") navigate(`${basePath}/parent`, { replace: true });
+      // admin stays at basePath (dashboard)
+    }
+  }, [slug, loading, membership, role, location.pathname]);
+
+  // Block non-admin roles from accessing admin-only paths
+  useEffect(() => {
+    if (!slug || loading || !membership || isPlatformAdmin) return;
+    if (role === "admin" || role === "staff") return;
+
+    const basePath = `/${slug}`;
+    const relativePath = location.pathname.replace(basePath, "");
+    const isRestricted = ADMIN_ONLY_PATHS.some((p) => relativePath.startsWith(p));
+    if (isRestricted) {
+      if (role === "student") navigate(`${basePath}/student`, { replace: true });
+      else if (role === "teacher") navigate(`${basePath}/teacher`, { replace: true });
+      else if (role === "parent") navigate(`${basePath}/parent`, { replace: true });
+    }
+  }, [location.pathname, slug, loading, membership, role, isPlatformAdmin]);
 
   if (loading) {
     return (
@@ -136,13 +190,9 @@ export default function InstitutionLayout() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <Building2 className="h-12 w-12 mx-auto text-muted-foreground" />
-          <h1 className="text-2xl font-display font-bold text-foreground">
-            Institution Not Found
-          </h1>
+          <h1 className="text-2xl font-display font-bold text-foreground">Institution Not Found</h1>
           <p className="text-muted-foreground">{error || "This institution does not exist."}</p>
-          <Link to="/">
-            <Button variant="outline">Go Home</Button>
-          </Link>
+          <Link to="/"><Button variant="outline">Go Home</Button></Link>
         </div>
       </div>
     );
@@ -154,35 +204,35 @@ export default function InstitutionLayout() {
         <div className="text-center space-y-4">
           <Shield className="h-12 w-12 mx-auto text-muted-foreground" />
           <h2 className="text-xl font-display font-bold">Sign in Required</h2>
-          <p className="text-muted-foreground">
-            You need to sign in to access this institution.
-          </p>
-          <Link to="/auth">
-            <Button>Sign In</Button>
-          </Link>
+          <p className="text-muted-foreground">You need to sign in to access this institution.</p>
+          <Link to="/auth"><Button>Sign In</Button></Link>
         </div>
       </div>
     );
   }
 
-  if (!membership) {
+  // Allow platform admins even without explicit membership
+  if (!membership && !isPlatformAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <Users className="h-12 w-12 mx-auto text-muted-foreground" />
           <h2 className="text-xl font-display font-bold">Access Restricted</h2>
-          <p className="text-muted-foreground">
-            You are not a member of this institution.
-          </p>
-          <Link to="/">
-            <Button variant="outline">Go Home</Button>
-          </Link>
+          <p className="text-muted-foreground">You are not a member of this institution.</p>
+          <Link to="/"><Button variant="outline">Go Home</Button></Link>
         </div>
       </div>
     );
   }
 
+  const effectiveRole = membership?.role ?? "admin";
   const basePath = `/${slug}`;
+
+  const navSections =
+    effectiveRole === "student" ? studentNavSections
+    : effectiveRole === "teacher" ? teacherNavSections
+    : effectiveRole === "parent" ? parentNavSections
+    : adminNavSections;
 
   const isActive = (href: string) => {
     const fullPath = `${basePath}${href}`;
@@ -191,6 +241,8 @@ export default function InstitutionLayout() {
     }
     return location.pathname.startsWith(fullPath);
   };
+
+  const roleLabel = isPlatformAdmin && !membership ? "Platform Admin" : effectiveRole;
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -206,25 +258,16 @@ export default function InstitutionLayout() {
           <div className="flex items-center gap-3">
             <div className="feature-icon !w-9 !h-9 flex-shrink-0">
               {institution.logo_url ? (
-                <img
-                  src={institution.logo_url}
-                  alt={institution.name}
-                  className="w-full h-full object-cover rounded-xl"
-                />
+                <img src={institution.logo_url} alt={institution.name} className="w-full h-full object-cover rounded-xl" />
               ) : (
                 <Building2 className="w-4 h-4" />
               )}
             </div>
             {!collapsed && (
               <div className="min-w-0 flex-1">
-                <h2 className="font-display font-bold text-sm truncate">
-                  {institution.name}
-                </h2>
-                <Badge
-                  variant="outline"
-                  className="mt-0.5 text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/20"
-                >
-                  {membership.role}
+                <h2 className="font-display font-bold text-sm truncate">{institution.name}</h2>
+                <Badge variant="outline" className="mt-0.5 text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/20 capitalize">
+                  {roleLabel}
                 </Badge>
               </div>
             )}
@@ -233,7 +276,7 @@ export default function InstitutionLayout() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-4">
-          {(membership?.role === "student" ? studentNavSections : membership?.role === "teacher" ? teacherNavSections : membership?.role === "parent" ? parentNavSections : adminNavSections).map((section) => (
+          {navSections.map((section) => (
             <div key={section.label}>
               {!collapsed && (
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1.5">
@@ -276,10 +319,7 @@ export default function InstitutionLayout() {
           <Button
             variant="ghost"
             size="sm"
-            className={cn(
-              "w-full gap-2 text-muted-foreground",
-              collapsed ? "justify-center px-0" : "justify-start"
-            )}
+            className={cn("w-full gap-2 text-muted-foreground", collapsed ? "justify-center px-0" : "justify-start")}
             onClick={signOut}
             title="Sign Out"
           >
@@ -299,12 +339,7 @@ export default function InstitutionLayout() {
       </aside>
 
       {/* Main Content */}
-      <main
-        className={cn(
-          "flex-1 transition-all duration-300",
-          collapsed ? "ml-[68px]" : "ml-64"
-        )}
-      >
+      <main className={cn("flex-1 transition-all duration-300", collapsed ? "ml-[68px]" : "ml-64")}>
         <Outlet />
       </main>
     </div>
