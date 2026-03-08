@@ -243,7 +243,7 @@ export default function Auth() {
         {/* Role access cards */}
         <div className="space-y-2">
           <p className="text-center text-xs text-muted-foreground">Sign in as</p>
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="grid grid-cols-2 gap-2">
             {[
               {
                 role: "Super Admin",
