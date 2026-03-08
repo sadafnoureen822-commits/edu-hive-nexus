@@ -61,20 +61,33 @@ export default function StudentDashboard() {
     { label: "Certificates", value: myCerts.length, icon: Award, color: "text-yellow-600", bg: "bg-yellow-500/10", action: () => go("/certificates") },
   ];
 
+  // Bulk export
+  const allExportData = [
+    ...publishedCourses.map((c) => ({ Section: "Courses", Title: c.title, Status: c.status })),
+    ...activeAssignments.map((a) => ({ Section: "Assignments", Title: a.title, "Total Marks": a.total_marks, "Due Date": a.due_date ?? "" })),
+    ...publishedQuizzes.map((q) => ({ Section: "Quizzes", Title: q.title, "Total Marks": q.total_marks, "Duration (min)": q.duration_minutes })),
+    ...myMarks.map((m, i) => ({ Section: "Results", Index: i + 1, Score: m.total_marks ?? "", Theory: m.theory_marks ?? "", Practical: m.practical_marks ?? "", Remarks: m.remarks ?? "" })),
+    ...attendance.map((a) => ({ Section: "Attendance", Date: a.date, Status: a.status })),
+    ...myCerts.map((c) => ({ Section: "Certificates", Serial: c.serial_number, "Issued At": c.issued_at })),
+  ];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <div className="bg-orange-500/10 p-1.5 rounded-lg">
-            <GraduationCap className="h-4 w-4 text-orange-500" />
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-orange-500/10 p-1.5 rounded-lg">
+              <GraduationCap className="h-4 w-4 text-orange-500" />
+            </div>
+            <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 text-[10px]">Student Portal</Badge>
           </div>
-          <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 text-[10px]">Student Portal</Badge>
+          <h1 className="text-2xl font-display font-bold text-foreground">
+            Welcome back, {user?.user_metadata?.full_name?.split(" ")[0] || "Student"} 👋
+          </h1>
+          <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
-        <h1 className="text-2xl font-display font-bold text-foreground">
-          Welcome back, {user?.user_metadata?.full_name?.split(" ")[0] || "Student"} 👋
-        </h1>
-        <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
+        <ExportButton data={allExportData} fileName="student-portal-full-export" sheetName="Student Data" label="Download All" />
       </div>
 
       {/* Stat Cards */}

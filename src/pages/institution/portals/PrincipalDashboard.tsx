@@ -73,6 +73,14 @@ export default function PrincipalDashboard() {
     return { ...s, avg, marksCount: sMarks.length };
   }).sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
 
+  // Bulk export
+  const allExportData = [
+    ...teacherSummary.map((t) => ({ Section: "Teachers", Name: t.full_name ?? "", Courses: t.courseCount, Assignments: t.assignmentCount, Joined: t.created_at })),
+    ...studentSummary.map((s) => ({ Section: "Students", Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount })),
+    ...exams.map((e) => ({ Section: "Exams", Name: e.name, Type: e.exam_type, Status: e.status, "Start Date": e.start_date ?? "" })),
+    ...todayAtt.map((a) => ({ Section: "Attendance", Date: today, "Student ID": a.student_id, Status: a.status })),
+  ];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -95,6 +103,7 @@ export default function PrincipalDashboard() {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <ExportButton data={allExportData} fileName="principal-portal-full-export" sheetName="Principal Data" label="Download All" />
           <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => go("/exams")}>
             <PenSquare className="h-3.5 w-3.5" /> Exams
           </Button>
