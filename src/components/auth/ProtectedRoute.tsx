@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -9,6 +9,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children, requirePlatformAdmin = false }: ProtectedRouteProps) {
   const { user, loading, isPlatformAdmin } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -19,7 +20,8 @@ export default function ProtectedRoute({ children, requirePlatformAdmin = false 
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    // Preserve intended destination so we can redirect back after login
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   if (requirePlatformAdmin && !isPlatformAdmin) {
@@ -28,6 +30,7 @@ export default function ProtectedRoute({ children, requirePlatformAdmin = false 
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-display font-bold text-foreground">Access Denied</h1>
           <p className="text-muted-foreground">You don't have platform admin privileges.</p>
+          <Navigate to="/auth" replace />
         </div>
       </div>
     );
