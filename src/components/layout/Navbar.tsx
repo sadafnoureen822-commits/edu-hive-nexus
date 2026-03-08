@@ -5,6 +5,7 @@ import { Menu, X, GraduationCap } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: "Features", href: "#features" },

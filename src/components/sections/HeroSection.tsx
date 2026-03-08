@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Shield, Users, Building2 } from "lucide-react";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-screen pt-32 pb-20 overflow-hidden">
       {/* Background Elements */}
