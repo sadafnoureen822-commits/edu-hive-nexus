@@ -47,11 +47,21 @@ export default function AttendancePage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-display font-bold text-foreground">Attendance</h1>
           <p className="text-sm text-muted-foreground">Track and manage student attendance</p>
         </div>
+        <ExportButton
+          data={dayAttendance.map((a) => ({
+            "Student ID": a.student_id,
+            Date: a.date,
+            Status: a.status,
+            Notes: a.notes ?? "",
+          }))}
+          fileName={`attendance-${selectedDate}`}
+          sheetName="Attendance"
+        />
       </div>
 
       {/* Summary cards */}

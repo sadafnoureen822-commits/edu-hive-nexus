@@ -159,9 +159,25 @@ export default function MarksResultsPage() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">Marks & Results</h1>
-        <p className="text-muted-foreground mt-1">Enter student marks and view results</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">Marks & Results</h1>
+          <p className="text-muted-foreground mt-1">Enter student marks and view results</p>
+        </div>
+        <ExportButton
+          data={Object.values(marks).map((m) => ({
+            "Student ID": m.student_id,
+            Exam: selectedExamData?.name ?? "",
+            "Theory Marks": m.theory_marks,
+            "Practical Marks": m.practical_marks,
+            "Viva Marks": m.viva_marks,
+            Absent: m.is_absent ? "Yes" : "No",
+            Remarks: m.remarks,
+          }))}
+          fileName="student-marks"
+          sheetName="Marks"
+          disabled={!selectedSubjectId}
+        />
       </div>
 
       {/* Exam + Subject Selectors */}
