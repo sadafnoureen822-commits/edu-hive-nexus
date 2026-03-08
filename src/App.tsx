@@ -48,6 +48,8 @@ import ActivityLogsPage from "./pages/institution/ActivityLogsPage";
 import StudentPromotionsPage from "./pages/institution/StudentPromotionsPage";
 import ApiKeysPage from "./pages/institution/ApiKeysPage";
 import PublicSite from "./pages/public/PublicSite";
+import ResetPassword from "./pages/ResetPassword";
+import MarksResultsPage from "./pages/institution/MarksResultsPage";
 import CertificateVerification from "./pages/public/CertificateVerification";
 
 const queryClient = new QueryClient();
@@ -124,16 +126,14 @@ const App = () => (
               {/* Role Portals */}
               <Route path="student" element={<StudentDashboard />} />
               <Route path="teacher" element={<TeacherDashboard />} />
+              <Route path="marks" element={<MarksResultsPage />} />
               <Route path="parent" element={<ParentDashboard />} />
             </Route>
 
-            {/* Public institution website */}
+            {/* Marks & Results under institution */}
             <Route path="/site/:slug/*" element={<PublicSite />} />
-
-            {/* Certificate Verification */}
             <Route path="/verify" element={<CertificateVerification />} />
-
-            {/* Catch-all */}
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

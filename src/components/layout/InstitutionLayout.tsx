@@ -35,6 +35,7 @@ const adminNavSections = [
       { href: "/academics", label: "Classes & Subjects", icon: GraduationCap },
       { href: "/timetable", label: "Timetable", icon: Clock },
       { href: "/exams", label: "Examinations", icon: ClipboardList },
+      { href: "/marks", label: "Marks & Results", icon: TrendingUp },
       { href: "/attendance", label: "Attendance", icon: CalendarCheck },
       { href: "/fees", label: "Fee Management", icon: DollarSign },
     ],
