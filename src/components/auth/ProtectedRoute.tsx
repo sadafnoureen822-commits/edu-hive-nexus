@@ -25,15 +25,7 @@ export default function ProtectedRoute({ children, requirePlatformAdmin = false 
   }
 
   if (requirePlatformAdmin && !isPlatformAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-display font-bold text-foreground">Access Denied</h1>
-          <p className="text-muted-foreground">You don't have platform admin privileges.</p>
-          <Navigate to="/auth" replace />
-        </div>
-      </div>
-    );
+    return <Navigate to="/auth" replace />;
   }
 
   return <>{children}</>;
