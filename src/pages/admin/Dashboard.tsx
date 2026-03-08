@@ -9,6 +9,7 @@ import {
   Building2, Globe, Users, Activity, TrendingUp, CreditCard,
   DollarSign, CheckCircle2, AlertCircle, Clock, ArrowRight, BarChart3
 } from "lucide-react";
+import AIDataExport from "@/components/ui/AIDataExport";
 import { format } from "date-fns";
 
 interface PlatformStats {

@@ -33,6 +33,7 @@ import {
   User, Users, School, Loader2, Building2, Mail, Eye, EyeOff,
   UserPlus, MoreHorizontal,
 } from "lucide-react";
+import AIDataExport from "@/components/ui/AIDataExport";
 import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────────────────────────────

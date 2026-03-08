@@ -18,6 +18,7 @@ import {
   UserPlus, Award, MessageSquare, Search, Building2, Loader2,
   Settings2, CheckCircle2, XCircle, RefreshCw,
 } from "lucide-react";
+import AIDataExport from "@/components/ui/AIDataExport";
 import { toast } from "sonner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────

@@ -27,6 +27,7 @@ import {
   Users, UserPlus, Search, MoreHorizontal, Trash2, Pencil,
   Loader2, GraduationCap, User, Shield, School, UserCog, Building2,
 } from "lucide-react";
+import AIDataExport from "@/components/ui/AIDataExport";
 import { toast } from "sonner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────

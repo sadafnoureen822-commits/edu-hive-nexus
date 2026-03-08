@@ -23,6 +23,7 @@ import {
   Edit2,
   Loader2,
 } from "lucide-react";
+import AIDataExport from "@/components/ui/AIDataExport";
 
 interface Plan {
   id: string;

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Building2, ExternalLink } from "lucide-react";
+import AIDataExport from "@/components/ui/AIDataExport";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Institution = Tables<"institutions">;
