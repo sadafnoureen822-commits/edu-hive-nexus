@@ -47,7 +47,9 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const from = (location.state as any)?.from?.pathname || null;
 
   // Navigate to the correct portal after login — parallel queries for speed
   const handlePostLogin = async (userId: string) => {
