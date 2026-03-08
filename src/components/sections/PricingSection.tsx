@@ -139,7 +139,7 @@ const PricingSection = () => {
           <p className="text-muted-foreground mb-4">
             Need a custom solution for multiple institutions?
           </p>
-          <Button variant="outline" size="lg">
+          <Button variant="outline" size="lg" onClick={() => navigate("/auth")}>
             Schedule Enterprise Demo
           </Button>
         </div>
