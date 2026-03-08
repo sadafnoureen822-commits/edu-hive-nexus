@@ -77,7 +77,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     };
 
     fetchTenant();
-  }, [slug, user]);
+  }, [slug, user, authLoading]);
 
   return (
     <TenantContext.Provider value={{ institution, membership, loading, error }}>
