@@ -126,6 +126,7 @@ const App = () => (
               {/* Role Portals */}
               <Route path="student" element={<StudentDashboard />} />
               <Route path="teacher" element={<TeacherDashboard />} />
+              <Route path="marks" element={<MarksResultsPage />} />
               <Route path="parent" element={<ParentDashboard />} />
             </Route>
 
