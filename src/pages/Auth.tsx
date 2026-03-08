@@ -81,39 +81,6 @@ export default function Auth() {
 
     navigate("/admin");
   };
-  const handlePostLogin = async (userId: string) => {
-    const { data: platformRole } = await supabase
-      .from("platform_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (platformRole?.role === "platform_admin") {
-      navigate("/admin");
-      return;
-    }
-
-    const { data: memberships } = await supabase
-      .from("institution_members")
-      .select("institution_id, role, institutions!institution_id(slug)")
-      .eq("user_id", userId)
-      .limit(1);
-
-    if (memberships && memberships.length > 0) {
-      const m = memberships[0] as any;
-      const slug = m.institutions?.slug;
-      const role = m.role;
-      if (slug) {
-        if (role === "student") navigate(`/${slug}/student`);
-        else if (role === "teacher") navigate(`/${slug}/teacher`);
-        else if (role === "parent") navigate(`/${slug}/parent`);
-        else navigate(`/${slug}`);
-        return;
-      }
-    }
-
-    navigate("/admin");
-  };
 
   // Role card click: navigate if already signed in, else prompt
   const handleRoleClick = async (roleKey: string) => {
