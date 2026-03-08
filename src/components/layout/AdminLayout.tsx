@@ -2,22 +2,18 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
-  Building2,
-  Globe,
-  Users,
-  LayoutDashboard,
-  LogOut,
-  Shield,
-  CreditCard,
+  Building2, Globe, Users, LayoutDashboard, LogOut,
+  Shield, CreditCard, UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/institutions", label: "Institutions", icon: Building2 },
-  { href: "/admin/domains", label: "Domains", icon: Globe },
-  { href: "/admin/members", label: "Members", icon: Users },
-  { href: "/admin/billing", label: "Billing & Revenue", icon: CreditCard },
+  { href: "/admin",                label: "Dashboard",       icon: LayoutDashboard },
+  { href: "/admin/institutions",   label: "Institutions",    icon: Building2 },
+  { href: "/admin/domains",        label: "Domains",         icon: Globe },
+  { href: "/admin/members",        label: "Members",         icon: Users },
+  { href: "/admin/role-assignment",label: "Role Assignment", icon: UserCog },
+  { href: "/admin/billing",        label: "Billing & Revenue", icon: CreditCard },
 ];
 
 export default function AdminLayout() {
@@ -32,7 +28,7 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar — fixed so it doesn't scroll with content */}
+      {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 w-64 border-r border-border bg-card flex flex-col z-30">
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-2">
@@ -53,7 +49,10 @@ export default function AdminLayout() {
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + "/");
+            const isActive =
+              item.href === "/admin"
+                ? location.pathname === "/admin"
+                : location.pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
@@ -84,7 +83,7 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Main content — offset by sidebar width */}
+      {/* Main content */}
       <main className="flex-1 ml-64 overflow-auto min-h-screen">
         <Outlet />
       </main>

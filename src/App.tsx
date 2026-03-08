@@ -15,6 +15,7 @@ import InstitutionsPage from "./pages/admin/Institutions";
 import InstitutionDetail from "./pages/admin/InstitutionDetail";
 import DomainsPage from "./pages/admin/Domains";
 import MembersPage from "./pages/admin/Members";
+import RoleAssignmentPage from "./pages/admin/RoleAssignment";
 import BillingDashboard from "./pages/admin/BillingDashboard";
 import InstitutionLayout from "./components/layout/InstitutionLayout";
 import InstitutionOverview from "./pages/institution/InstitutionOverview";
@@ -92,6 +93,7 @@ function App() {
               <Route path="institutions/:id" element={<InstitutionDetail />} />
               <Route path="domains" element={<DomainsPage />} />
               <Route path="members" element={<MembersPage />} />
+              <Route path="role-assignment" element={<RoleAssignmentPage />} />
               <Route path="billing" element={<BillingDashboard />} />
             </Route>
 
