@@ -187,9 +187,12 @@ export default function PrincipalDashboard() {
         <TabsContent value="teachers" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{teachers.length} teacher{teachers.length !== 1 ? "s" : ""}</p>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/users")}>
-              Manage Staff <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={teacherSummary.map((t) => ({ Name: t.full_name ?? "", Courses: t.courseCount, Assignments: t.assignmentCount, Joined: t.created_at }))} fileName="teaching-staff" sheetName="Teachers" />
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/users")}>
+                Manage Staff <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           {teachers.length === 0 ? (
             <EmptyState icon={GraduationCap} message="No teachers assigned yet" />
