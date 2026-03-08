@@ -207,7 +207,7 @@ export default function ExamManagement() {
           />
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild><Button className="gap-2"><Plus className="h-4 w-4" />Create Exam</Button></DialogTrigger>
-          <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>Create Examination</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div><Label>Exam Name</Label><Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Mid-Term Exam 2025" /></div>
