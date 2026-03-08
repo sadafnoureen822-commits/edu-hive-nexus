@@ -1,5 +1,8 @@
 project_id = "jpdrwnuvtqvbdjbzvwah"
 
+[functions.admin-list-users]
+verify_jwt = false
+
 [functions.send-notification]
 verify_jwt = true
 

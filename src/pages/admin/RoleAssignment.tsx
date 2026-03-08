@@ -139,6 +139,16 @@ export default function RoleAssignmentPage() {
     },
   });
 
+  const { data: emailMap = {} } = useQuery({
+    queryKey: ["admin-user-emails"],
+    queryFn: async () => {
+      const res = await supabase.functions.invoke("admin-list-users");
+      if (res.error) return {};
+      const users = (res.data as any)?.users ?? [];
+      return Object.fromEntries(users.map((u: any) => [u.id, u.email])) as Record<string, string>;
+    },
+  });
+
   // ── Mutations ─────────────────────────────────────────────────────────────
   const assignMutation = useMutation({
     mutationFn: async ({ userId, institutionId, role }: { userId: string; institutionId: string; role: string }) => {
@@ -316,10 +326,14 @@ export default function RoleAssignmentPage() {
     !userSearch || p.full_name?.toLowerCase().includes(userSearch.toLowerCase())
   );
 
-  const filteredUsers = profiles.filter((p) =>
-    !usersSearch || p.full_name?.toLowerCase().includes(usersSearch.toLowerCase()) ||
-    p.user_id.toLowerCase().includes(usersSearch.toLowerCase())
-  );
+  const filteredUsers = profiles.filter((p) => {
+    if (!usersSearch) return true;
+    const q = usersSearch.toLowerCase();
+    const email = emailMap[p.user_id] ?? "";
+    return p.full_name?.toLowerCase().includes(q) ||
+      p.user_id.toLowerCase().includes(q) ||
+      email.toLowerCase().includes(q);
+  });
 
   const counts = ALL_ROLES.reduce((acc, r) => {
     acc[r] = members.filter((m) => m.role === r).length;
@@ -606,7 +620,7 @@ export default function RoleAssignmentPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name or user ID…"
+                  placeholder="Search by name, email or user ID…"
                   value={usersSearch}
                   onChange={(e) => setUsersSearch(e.target.value)}
                   className="pl-9"
@@ -638,7 +652,7 @@ export default function RoleAssignmentPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>User</TableHead>
-                      <TableHead>User ID</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Assignments</TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
@@ -646,6 +660,7 @@ export default function RoleAssignmentPage() {
                   <TableBody>
                     {filteredUsers.map((p) => {
                       const userMemberships = members.filter((m) => m.user_id === p.user_id);
+                      const email = emailMap[p.user_id];
                       return (
                         <TableRow key={p.user_id}>
                           <TableCell>
@@ -659,9 +674,14 @@ export default function RoleAssignmentPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-xs text-muted-foreground font-mono">
-                              {p.user_id.slice(0, 16)}…
-                            </span>
+                            {email ? (
+                              <div className="flex items-center gap-1.5">
+                                <Mail className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                                <span className="text-sm text-muted-foreground">{email}</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground italic">—</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             {userMemberships.length === 0 ? (
