@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 type AttStatus = "present" | "absent" | "late" | "excused";
 
@@ -90,6 +91,15 @@ export default function TeacherDashboard() {
     { label: "Students", value: students.length, icon: Users, color: "text-accent", bg: "bg-accent/10" },
   ];
 
+  // Bulk export data
+  const allExportData = [
+    ...myCourses.map((c) => ({ Section: "Courses", Title: c.title, Description: c.description ?? "", Status: c.status, Created: c.created_at })),
+    ...myAssignments.map((a) => ({ Section: "Assignments", Title: a.title, "Total Marks": a.total_marks, "Passing Marks": a.passing_marks, Status: a.status, "Due Date": a.due_date ?? "" })),
+    ...myQuizzes.map((q) => ({ Section: "Quizzes", Title: q.title, Description: q.description ?? "", Status: q.status, "Total Marks": q.total_marks, "Duration (min)": q.duration_minutes })),
+    ...studentProgress.map((s) => ({ Section: "Students", Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount, Joined: s.created_at })),
+    ...existingAtt.map((a) => ({ Section: "Attendance", Date: attDate, "Student ID": a.student_id, Status: a.status })),
+  ];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -106,6 +116,7 @@ export default function TeacherDashboard() {
           </h1>
           <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
+        <ExportButton data={allExportData} fileName="teacher-portal-full-export" sheetName="Teacher Data" label="Download All" />
       </div>
 
       {/* Stats */}
@@ -209,9 +220,12 @@ export default function TeacherDashboard() {
         <TabsContent value="courses" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{myCourses.length} course{myCourses.length !== 1 ? "s" : ""} created by you</p>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/courses")}>
-              Manage <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={myCourses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status, Created: c.created_at }))} fileName="my-courses" sheetName="Courses" />
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/courses")}>
+                Manage <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           {myCourses.length === 0 ? (
             <EmptyState icon={BookOpen} message="You haven't created any courses yet" action={{ label: "Create Course", onClick: () => go("/courses") }} />
@@ -243,9 +257,12 @@ export default function TeacherDashboard() {
         <TabsContent value="assignments" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{myAssignments.length} assignment{myAssignments.length !== 1 ? "s" : ""} created by you</p>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/assignments")}>
-              Manage <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={myAssignments.map((a) => ({ Title: a.title, "Total Marks": a.total_marks, "Passing Marks": a.passing_marks, Status: a.status, "Due Date": a.due_date ?? "" }))} fileName="my-assignments" sheetName="Assignments" />
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/assignments")}>
+                Manage <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           {myAssignments.length === 0 ? (
             <EmptyState icon={ClipboardList} message="You haven't created any assignments yet" action={{ label: "Create Assignment", onClick: () => go("/assignments") }} />
@@ -274,8 +291,9 @@ export default function TeacherDashboard() {
 
         {/* ── Student Progress ── */}
         <TabsContent value="progress" className="mt-4">
-          <div className="mb-3">
+          <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{students.length} student{students.length !== 1 ? "s" : ""} enrolled</p>
+            <ExportButton data={studentProgress.map((s) => ({ Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount, Joined: s.created_at }))} fileName="student-progress" sheetName="Students" />
           </div>
           {students.length === 0 ? (
             <EmptyState icon={Users} message="No students enrolled yet" />

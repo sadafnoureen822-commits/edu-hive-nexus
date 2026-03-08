@@ -19,6 +19,7 @@ import {
   PenSquare, AlertCircle,
 } from "lucide-react";
 import { format } from "date-fns";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function PrincipalDashboard() {
   const { institution } = useTenant();
@@ -72,6 +73,14 @@ export default function PrincipalDashboard() {
     return { ...s, avg, marksCount: sMarks.length };
   }).sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
 
+  // Bulk export
+  const allExportData = [
+    ...teacherSummary.map((t) => ({ Section: "Teachers", Name: t.full_name ?? "", Courses: t.courseCount, Assignments: t.assignmentCount, Joined: t.created_at })),
+    ...studentSummary.map((s) => ({ Section: "Students", Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount })),
+    ...exams.map((e) => ({ Section: "Exams", Name: e.name, Type: e.exam_type, Status: e.status, "Start Date": e.start_date ?? "" })),
+    ...todayAtt.map((a) => ({ Section: "Attendance", Date: today, "Student ID": a.student_id, Status: a.status })),
+  ];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -94,6 +103,7 @@ export default function PrincipalDashboard() {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <ExportButton data={allExportData} fileName="principal-portal-full-export" sheetName="Principal Data" label="Download All" />
           <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => go("/exams")}>
             <PenSquare className="h-3.5 w-3.5" /> Exams
           </Button>
@@ -177,9 +187,12 @@ export default function PrincipalDashboard() {
         <TabsContent value="teachers" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{teachers.length} teacher{teachers.length !== 1 ? "s" : ""}</p>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/users")}>
-              Manage Staff <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={teacherSummary.map((t) => ({ Name: t.full_name ?? "", Courses: t.courseCount, Assignments: t.assignmentCount, Joined: t.created_at }))} fileName="teaching-staff" sheetName="Teachers" />
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/users")}>
+                Manage Staff <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           {teachers.length === 0 ? (
             <EmptyState icon={GraduationCap} message="No teachers assigned yet" />
@@ -216,9 +229,12 @@ export default function PrincipalDashboard() {
         <TabsContent value="students" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{students.length} student{students.length !== 1 ? "s" : ""} · ranked by avg score</p>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/marks")}>
-              Full Results <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={studentSummary.map((s, i) => ({ Rank: i + 1, Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount }))} fileName="student-results-ranking" sheetName="Students" />
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/marks")}>
+                Full Results <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           {students.length === 0 ? (
             <EmptyState icon={Users} message="No students enrolled yet" />
@@ -259,9 +275,12 @@ export default function PrincipalDashboard() {
         <TabsContent value="exams" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{exams.length} exam{exams.length !== 1 ? "s" : ""} total</p>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/exams")}>
-              Manage Exams <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={exams.map((e) => ({ Name: e.name, Type: e.exam_type, Status: e.status, "Start Date": e.start_date ?? "", "End Date": e.end_date ?? "" }))} fileName="exams" sheetName="Exams" />
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/exams")}>
+                Manage Exams <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           {exams.length === 0 ? (
             <EmptyState icon={PenSquare} message="No exams created yet" action={{ label: "Create Exam", onClick: () => go("/exams") }} />

@@ -121,17 +121,30 @@ export default function ParentDashboard() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <div className="bg-rose-500/10 p-1.5 rounded-lg">
-            <HeartHandshake className="h-4 w-4 text-rose-500" />
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-rose-500/10 p-1.5 rounded-lg">
+              <HeartHandshake className="h-4 w-4 text-rose-500" />
+            </div>
+            <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[10px]">Parent Portal</Badge>
           </div>
-          <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[10px]">Parent Portal</Badge>
+          <h1 className="text-2xl font-display font-bold text-foreground">
+            Welcome, {user?.user_metadata?.full_name?.split(" ")[0] || "Parent"} 👋
+          </h1>
+          <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
-        <h1 className="text-2xl font-display font-bold text-foreground">
-          Welcome, {user?.user_metadata?.full_name?.split(" ")[0] || "Parent"} 👋
-        </h1>
-        <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
+        <ExportButton
+          data={[
+            ...(attendance?.recent ?? []).map((a) => ({ Section: "Attendance", Date: a.date, Status: a.status })),
+            ...marks.map((m, i) => ({ Section: "Results", "#": i + 1, Score: m.total_marks ?? "", Status: m.status, Remarks: m.remarks ?? "" })),
+            ...enrollments.map((e) => ({ Section: "Courses", Title: e.title, Status: e.status })),
+            ...certs.map((c) => ({ Section: "Certificates", Serial: c.serial_number, "Issued At": c.issued_at, Template: c.template })),
+          ]}
+          fileName={`parent-portal-${currentChild?.fullName ?? "child"}-full-export`}
+          sheetName="Child Report"
+          label="Download All"
+        />
       </div>
 
       {/* No children linked */}
@@ -238,6 +251,10 @@ export default function ParentDashboard() {
 
           {/* Attendance */}
           <TabsContent value="attendance" className="mt-4 space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-muted-foreground">{attendance?.total ?? 0} records</p>
+              <ExportButton data={(attendance?.recent ?? []).map((a) => ({ Date: a.date, Status: a.status }))} fileName={`attendance-${currentChild?.fullName ?? "child"}`} sheetName="Attendance" />
+            </div>
             {childDataLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : attendance ? (
@@ -294,6 +311,10 @@ export default function ParentDashboard() {
 
           {/* Results */}
           <TabsContent value="results" className="mt-4">
+            <div className="flex justify-between items-center mb-3">
+              <p className="text-xs text-muted-foreground">{marks.length} result{marks.length !== 1 ? "s" : ""}</p>
+              <ExportButton data={marks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} fileName={`results-${currentChild?.fullName ?? "child"}`} sheetName="Results" />
+            </div>
             {childDataLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : marks.length === 0 ? (
@@ -329,6 +350,10 @@ export default function ParentDashboard() {
 
           {/* Courses */}
           <TabsContent value="courses" className="mt-4">
+            <div className="flex justify-between items-center mb-3">
+              <p className="text-xs text-muted-foreground">{enrollments.length} enrollment{enrollments.length !== 1 ? "s" : ""}</p>
+              <ExportButton data={enrollments.map((e) => ({ Course: e.title, Status: e.status }))} fileName={`courses-${currentChild?.fullName ?? "child"}`} sheetName="Courses" />
+            </div>
             {childDataLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : enrollments.length === 0 ? (

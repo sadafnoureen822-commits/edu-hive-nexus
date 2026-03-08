@@ -18,6 +18,7 @@ import {
   BarChart3, Star, GraduationCap, Download,
 } from "lucide-react";
 import { format } from "date-fns";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function StudentDashboard() {
   const { institution } = useTenant();
@@ -61,20 +62,33 @@ export default function StudentDashboard() {
     { label: "Certificates", value: myCerts.length, icon: Award, color: "text-yellow-600", bg: "bg-yellow-500/10", action: () => go("/certificates") },
   ];
 
+  // Bulk export
+  const allExportData = [
+    ...publishedCourses.map((c) => ({ Section: "Courses", Title: c.title, Status: c.status })),
+    ...activeAssignments.map((a) => ({ Section: "Assignments", Title: a.title, "Total Marks": a.total_marks, "Due Date": a.due_date ?? "" })),
+    ...publishedQuizzes.map((q) => ({ Section: "Quizzes", Title: q.title, "Total Marks": q.total_marks, "Duration (min)": q.duration_minutes })),
+    ...myMarks.map((m, i) => ({ Section: "Results", Index: i + 1, Score: m.total_marks ?? "", Theory: m.theory_marks ?? "", Practical: m.practical_marks ?? "", Remarks: m.remarks ?? "" })),
+    ...attendance.map((a) => ({ Section: "Attendance", Date: a.date, Status: a.status })),
+    ...myCerts.map((c) => ({ Section: "Certificates", Serial: c.serial_number, "Issued At": c.issued_at })),
+  ];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <div className="bg-orange-500/10 p-1.5 rounded-lg">
-            <GraduationCap className="h-4 w-4 text-orange-500" />
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-orange-500/10 p-1.5 rounded-lg">
+              <GraduationCap className="h-4 w-4 text-orange-500" />
+            </div>
+            <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 text-[10px]">Student Portal</Badge>
           </div>
-          <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 text-[10px]">Student Portal</Badge>
+          <h1 className="text-2xl font-display font-bold text-foreground">
+            Welcome back, {user?.user_metadata?.full_name?.split(" ")[0] || "Student"} 👋
+          </h1>
+          <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
-        <h1 className="text-2xl font-display font-bold text-foreground">
-          Welcome back, {user?.user_metadata?.full_name?.split(" ")[0] || "Student"} 👋
-        </h1>
-        <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
+        <ExportButton data={allExportData} fileName="student-portal-full-export" sheetName="Student Data" label="Download All" />
       </div>
 
       {/* Stat Cards */}
@@ -165,9 +179,10 @@ export default function StudentDashboard() {
         <TabsContent value="courses" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{publishedCourses.length} published course{publishedCourses.length !== 1 ? "s" : ""}</p>
-            <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/courses")}>
-              View All <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={publishedCourses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status }))} fileName="my-courses" sheetName="Courses" />
+              <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/courses")}>View All <ArrowRight className="h-3 w-3" /></Button>
+            </div>
           </div>
           {publishedCourses.length === 0 ? (
             <EmptyState icon={BookOpen} message="No courses published yet" />
@@ -202,7 +217,10 @@ export default function StudentDashboard() {
         <TabsContent value="assignments" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{activeAssignments.length} active</p>
-            <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/assignments")}>View All <ArrowRight className="h-3 w-3" /></Button>
+            <div className="flex gap-2">
+              <ExportButton data={activeAssignments.map((a) => ({ Title: a.title, "Total Marks": a.total_marks, "Due Date": a.due_date ?? "", Status: a.status }))} fileName="active-assignments" sheetName="Assignments" />
+              <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/assignments")}>View All <ArrowRight className="h-3 w-3" /></Button>
+            </div>
           </div>
           {activeAssignments.length === 0 ? (
             <EmptyState icon={ClipboardList} message="No active assignments" />
@@ -235,6 +253,10 @@ export default function StudentDashboard() {
 
         {/* Quizzes */}
         <TabsContent value="quizzes" className="mt-4">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-xs text-muted-foreground">{publishedQuizzes.length} quiz{publishedQuizzes.length !== 1 ? "zes" : ""} available</p>
+            <ExportButton data={publishedQuizzes.map((q) => ({ Title: q.title, "Total Marks": q.total_marks, "Duration (min)": q.duration_minutes, "Max Attempts": q.max_attempts }))} fileName="available-quizzes" sheetName="Quizzes" />
+          </div>
           {publishedQuizzes.length === 0 ? (
             <EmptyState icon={HelpCircle} message="No quizzes available" />
           ) : (
@@ -263,6 +285,10 @@ export default function StudentDashboard() {
 
         {/* Results */}
         <TabsContent value="results" className="mt-4">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-xs text-muted-foreground">{myMarks.length} result{myMarks.length !== 1 ? "s" : ""}</p>
+            <ExportButton data={myMarks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Theory: m.theory_marks ?? "", Practical: m.practical_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} fileName="my-results" sheetName="Results" />
+          </div>
           {myMarks.length === 0 ? (
             <EmptyState icon={BarChart3} message="No results published yet" />
           ) : (
@@ -298,6 +324,10 @@ export default function StudentDashboard() {
 
         {/* Attendance */}
         <TabsContent value="attendance" className="mt-4">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-xs text-muted-foreground">{attendance.length} record{attendance.length !== 1 ? "s" : ""}</p>
+            <ExportButton data={attendance.map((a) => ({ Date: a.date, Status: a.status }))} fileName="my-attendance" sheetName="Attendance" />
+          </div>
           {/* Summary */}
           <div className="grid grid-cols-3 gap-3 mb-4">
             {[
