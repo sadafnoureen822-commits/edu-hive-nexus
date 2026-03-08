@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Building2, Globe, Users, LayoutDashboard, LogOut,
   Shield, CreditCard, UserCog, ChevronLeft, ChevronRight,
-  BarChart3, Settings,
+  Settings2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -15,27 +15,28 @@ const navSections = [
   {
     label: "Overview",
     items: [
-      { href: "/admin",              label: "Dashboard",          icon: LayoutDashboard },
+      { href: "/admin",              label: "Dashboard",         icon: LayoutDashboard },
     ],
   },
   {
     label: "Institutions",
     items: [
-      { href: "/admin/institutions", label: "All Institutions",   icon: Building2 },
-      { href: "/admin/domains",      label: "Domain Mapping",     icon: Globe },
+      { href: "/admin/institutions", label: "All Institutions",  icon: Building2 },
+      { href: "/admin/domains",      label: "Domain Mapping",    icon: Globe },
+      { href: "/admin/modules",      label: "Module Control",    icon: Settings2 },
     ],
   },
   {
     label: "Users",
     items: [
-      { href: "/admin/members",         label: "All Members",      icon: Users },
-      { href: "/admin/role-assignment", label: "Role Assignment",  icon: UserCog },
+      { href: "/admin/members",         label: "All Members",     icon: Users },
+      { href: "/admin/role-assignment", label: "Role Assignment", icon: UserCog },
     ],
   },
   {
     label: "Finance",
     items: [
-      { href: "/admin/billing",      label: "Billing & Revenue",  icon: CreditCard },
+      { href: "/admin/billing",      label: "Billing & Revenue", icon: CreditCard },
     ],
   },
 ];
