@@ -51,46 +51,41 @@ export default function Auth() {
   const { toast } = useToast();
   const from = (location.state as any)?.from?.pathname || null;
 
-  // Navigate to the correct portal after login — parallel queries for speed
-  const handlePostLogin = async (userId: string) => {
-    // If there's a saved intended destination, go there first
-    if (from && from !== "/auth") {
-      navigate(from, { replace: true });
-      return;
-    }
-
+  // Navigate to the correct portal — runs after login OR role card click
+  const navigateByRole = async (userId: string) => {
     const [platformRes, memberRes] = await Promise.all([
       supabase.from("platform_roles").select("role").eq("user_id", userId).maybeSingle(),
       supabase
         .from("institution_members")
-        .select("institution_id, role, institutions!institution_id(slug)")
+        .select("role, institutions!institution_id(slug)")
         .eq("user_id", userId)
         .limit(1),
     ]);
 
     if (platformRes.data?.role === "platform_admin") {
-      navigate("/admin");
+      navigate("/admin", { replace: true });
       return;
     }
 
-    const memberships = memberRes.data;
+    const memberships = memberRes.data as any[] | null;
     if (memberships && memberships.length > 0) {
-      const m = memberships[0] as any;
+      const m = memberships[0];
       const slug = m.institutions?.slug;
       const role = m.role;
       if (slug) {
-        if (role === "student") navigate(`/${slug}/student`);
-        else if (role === "teacher") navigate(`/${slug}/teacher`);
-        else if (role === "parent") navigate(`/${slug}/parent`);
-        else navigate(`/${slug}`);
+        if (role === "student") navigate(`/${slug}/student`, { replace: true });
+        else if (role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
+        else if (role === "parent") navigate(`/${slug}/parent`, { replace: true });
+        else navigate(`/${slug}`, { replace: true });
         return;
       }
     }
 
-    navigate("/admin");
+    // Fallback
+    navigate("/admin", { replace: true });
   };
 
-  // Role card click: navigate if already signed in, else prompt
+  // Role card click: if session exists navigate, else show hint
   const handleRoleClick = async (roleKey: string) => {
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -105,7 +100,7 @@ export default function Auth() {
     const userId = session.user.id;
 
     if (roleKey === "superadmin") {
-      navigate("/admin");
+      navigate("/admin", { replace: true });
       return;
     }
 
@@ -129,12 +124,12 @@ export default function Auth() {
     const role = m.role;
     if (!slug) return;
 
-    if (roleKey === "admin") navigate(`/${slug}`);
-    else if (roleKey === "role") {
-      // Navigate based on actual role
-      if (role === "teacher") navigate(`/${slug}/teacher`);
-      else if (role === "parent") navigate(`/${slug}/parent`);
-      else navigate(`/${slug}/student`);
+    if (roleKey === "admin") {
+      navigate(`/${slug}`, { replace: true });
+    } else if (roleKey === "role") {
+      if (role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
+      else if (role === "parent") navigate(`/${slug}/parent`, { replace: true });
+      else navigate(`/${slug}/student`, { replace: true });
     }
   };
 
@@ -161,12 +156,17 @@ export default function Auth() {
       if (error) {
         toast({ title: "Login failed", description: error.message, variant: "destructive" });
         setLoading(false);
-      } else if (data.user) {
-        // Reset loading immediately so button doesn't stay on "Please wait..."
-        // Navigation happens asynchronously in the background
+        return;
+      }
+      if (data.user) {
         setLoading(false);
-        toast({ title: "Welcome back!" });
-        handlePostLogin(data.user.id);
+        toast({ title: "Welcome back!", description: "Redirecting to your portal..." });
+        // If there's an intended destination, go there
+        if (from && from !== "/auth") {
+          navigate(from, { replace: true });
+        } else {
+          await navigateByRole(data.user.id);
+        }
       }
     } else {
       if (!fullName.trim()) {
