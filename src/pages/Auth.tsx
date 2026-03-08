@@ -220,11 +220,11 @@ export default function Auth() {
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            {PORTAL_CARDS.map(({ key, label, sub, Icon, lightBg, iconColor, iconBg }) => (
+            {PORTAL_CARDS.map(({ urlSlug, label, sub, Icon, lightBg, iconColor, iconBg }) => (
               <button
-                key={key}
+                key={urlSlug}
                 type="button"
-                onClick={() => navigate(`/${key}/login`)}
+                onClick={() => navigate(`/${urlSlug}/login`)}
                 className={`flex items-center gap-4 p-4 rounded-2xl border-2 ${lightBg} text-left transition-all duration-150 hover:scale-[1.01] hover:shadow-md active:scale-[0.99] group`}
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
