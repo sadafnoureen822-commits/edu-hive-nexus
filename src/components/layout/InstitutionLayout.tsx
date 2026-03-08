@@ -266,6 +266,7 @@ export default function InstitutionLayout() {
     effectiveRole === "student" ? studentNavSections
     : effectiveRole === "teacher" ? teacherNavSections
     : effectiveRole === "parent" ? parentNavSections
+    : effectiveRole === "principal" ? principalNavSections
     : adminNavSections;
 
   const isActive = (href: string) => {
