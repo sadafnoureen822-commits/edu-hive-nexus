@@ -51,6 +51,7 @@ import PublicSite from "./pages/public/PublicSite";
 import ResetPassword from "./pages/ResetPassword";
 import MarksResultsPage from "./pages/institution/MarksResultsPage";
 import CertificateVerification from "./pages/public/CertificateVerification";
+import PortalLogin from "./pages/PortalLogin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
