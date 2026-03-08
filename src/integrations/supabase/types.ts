@@ -201,6 +201,118 @@ export type Database = {
           },
         ]
       }
+      announcements: {
+        Row: {
+          attachment_url: string | null
+          audience: string[] | null
+          class_ids: string[] | null
+          content: string
+          created_at: string
+          created_by: string | null
+          expire_date: string | null
+          id: string
+          institution_id: string
+          is_pinned: boolean
+          is_published: boolean
+          publish_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          audience?: string[] | null
+          class_ids?: string[] | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          expire_date?: string | null
+          id?: string
+          institution_id: string
+          is_pinned?: boolean
+          is_published?: boolean
+          publish_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          audience?: string[] | null
+          class_ids?: string[] | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          expire_date?: string | null
+          id?: string
+          institution_id?: string
+          is_pinned?: boolean
+          is_published?: boolean
+          publish_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_keys: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          institution_id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          scopes: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          institution_id: string
+          is_active?: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          scopes?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          institution_id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          scopes?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignment_submissions: {
         Row: {
           assignment_id: string
@@ -1108,6 +1220,62 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          audience: string | null
+          body: string | null
+          error_message: string | null
+          id: string
+          institution_id: string
+          message_id: string | null
+          recipient_email: string
+          recipient_name: string | null
+          sent_at: string
+          sent_by: string | null
+          status: string
+          subject: string
+          template_id: string | null
+        }
+        Insert: {
+          audience?: string | null
+          body?: string | null
+          error_message?: string | null
+          id?: string
+          institution_id: string
+          message_id?: string | null
+          recipient_email: string
+          recipient_name?: string | null
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          subject: string
+          template_id?: string | null
+        }
+        Update: {
+          audience?: string | null
+          body?: string | null
+          error_message?: string | null
+          id?: string
+          institution_id?: string
+          message_id?: string | null
+          recipient_email?: string
+          recipient_name?: string | null
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          subject?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exam_date_sheets: {
         Row: {
           created_at: string
@@ -1890,6 +2058,56 @@ export type Database = {
           },
         ]
       }
+      login_logs: {
+        Row: {
+          action: string
+          created_at: string
+          email: string | null
+          failure_reason: string | null
+          id: string
+          institution_id: string | null
+          ip_address: string | null
+          location: string | null
+          success: boolean
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          created_at?: string
+          email?: string | null
+          failure_reason?: string | null
+          id?: string
+          institution_id?: string | null
+          ip_address?: string | null
+          location?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          email?: string | null
+          failure_reason?: string | null
+          id?: string
+          institution_id?: string | null
+          ip_address?: string | null
+          location?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_logs_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           channel: string
@@ -2403,6 +2621,59 @@ export type Database = {
           },
         ]
       }
+      sms_logs: {
+        Row: {
+          audience: string | null
+          cost: number | null
+          error_message: string | null
+          id: string
+          institution_id: string
+          message: string
+          message_id: string | null
+          recipient_name: string | null
+          recipient_phone: string
+          sent_at: string
+          sent_by: string | null
+          status: string
+        }
+        Insert: {
+          audience?: string | null
+          cost?: number | null
+          error_message?: string | null
+          id?: string
+          institution_id: string
+          message: string
+          message_id?: string | null
+          recipient_name?: string | null
+          recipient_phone: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+        }
+        Update: {
+          audience?: string | null
+          cost?: number | null
+          error_message?: string | null
+          id?: string
+          institution_id?: string
+          message?: string
+          message_id?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_logs_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_marks: {
         Row: {
           approved_at: string | null
@@ -2580,6 +2851,107 @@ export type Database = {
             columns: ["section_id"]
             isOneToOne: false
             referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_promotions: {
+        Row: {
+          created_at: string
+          from_class_id: string
+          from_section_id: string | null
+          from_session_id: string
+          id: string
+          institution_id: string
+          promoted_at: string
+          promoted_by: string | null
+          promotion_type: string
+          remarks: string | null
+          student_id: string
+          to_class_id: string
+          to_section_id: string | null
+          to_session_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_class_id: string
+          from_section_id?: string | null
+          from_session_id: string
+          id?: string
+          institution_id: string
+          promoted_at?: string
+          promoted_by?: string | null
+          promotion_type?: string
+          remarks?: string | null
+          student_id: string
+          to_class_id: string
+          to_section_id?: string | null
+          to_session_id: string
+        }
+        Update: {
+          created_at?: string
+          from_class_id?: string
+          from_section_id?: string | null
+          from_session_id?: string
+          id?: string
+          institution_id?: string
+          promoted_at?: string
+          promoted_by?: string | null
+          promotion_type?: string
+          remarks?: string | null
+          student_id?: string
+          to_class_id?: string
+          to_section_id?: string | null
+          to_session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_promotions_from_class_id_fkey"
+            columns: ["from_class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_promotions_from_section_id_fkey"
+            columns: ["from_section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_promotions_from_session_id_fkey"
+            columns: ["from_session_id"]
+            isOneToOne: false
+            referencedRelation: "academic_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_promotions_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_promotions_to_class_id_fkey"
+            columns: ["to_class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_promotions_to_section_id_fkey"
+            columns: ["to_section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_promotions_to_session_id_fkey"
+            columns: ["to_session_id"]
+            isOneToOne: false
+            referencedRelation: "academic_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -2827,6 +3199,57 @@ export type Database = {
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_records: {
+        Row: {
+          certificate_id: string
+          id: string
+          institution_id: string
+          ip_address: string | null
+          result: string
+          user_agent: string | null
+          verified_at: string
+          verifier_name: string | null
+          verifier_org: string | null
+        }
+        Insert: {
+          certificate_id: string
+          id?: string
+          institution_id: string
+          ip_address?: string | null
+          result?: string
+          user_agent?: string | null
+          verified_at?: string
+          verifier_name?: string | null
+          verifier_org?: string | null
+        }
+        Update: {
+          certificate_id?: string
+          id?: string
+          institution_id?: string
+          ip_address?: string | null
+          result?: string
+          user_agent?: string | null
+          verified_at?: string
+          verifier_name?: string | null
+          verifier_org?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_records_certificate_id_fkey"
+            columns: ["certificate_id"]
+            isOneToOne: false
+            referencedRelation: "issued_certificates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_records_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
             referencedColumns: ["id"]
           },
         ]

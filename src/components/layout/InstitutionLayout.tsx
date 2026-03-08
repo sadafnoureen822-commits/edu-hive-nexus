@@ -5,30 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  GraduationCap,
-  ClipboardList,
-  MessageSquare,
-  CreditCard,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Shield,
-  Globe,
-  FileText,
-  Menu,
-  Image,
-  Palette,
-  BookOpen,
-  PenSquare,
-  HelpCircle,
-  Award,
-  CalendarCheck,
-  UserCheck,
+  LayoutDashboard, Building2, Users, GraduationCap, ClipboardList,
+  MessageSquare, CreditCard, Settings, LogOut, ChevronLeft, ChevronRight,
+  Loader2, Shield, Globe, FileText, Menu, Image, Palette, BookOpen,
+  PenSquare, HelpCircle, Award, CalendarCheck, UserCheck, Clock,
+  DollarSign, Megaphone, Bell, Activity, TrendingUp, Key, ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -43,9 +24,19 @@ const adminNavSections = [
     items: [
       { href: "/profile", label: "Institution Profile", icon: Building2 },
       { href: "/users", label: "User Management", icon: Users },
-      { href: "/academics", label: "Academics", icon: GraduationCap },
+      { href: "/admissions", label: "Admissions", icon: ClipboardCheck },
+      { href: "/student-profiles", label: "Student Profiles", icon: UserCheck },
+      { href: "/promotions", label: "Promotions", icon: TrendingUp },
+    ],
+  },
+  {
+    label: "Academics",
+    items: [
+      { href: "/academics", label: "Classes & Subjects", icon: GraduationCap },
+      { href: "/timetable", label: "Timetable", icon: Clock },
       { href: "/exams", label: "Examinations", icon: ClipboardList },
       { href: "/attendance", label: "Attendance", icon: CalendarCheck },
+      { href: "/fees", label: "Fee Management", icon: DollarSign },
     ],
   },
   {
@@ -61,6 +52,8 @@ const adminNavSections = [
     label: "Engage",
     items: [
       { href: "/communication", label: "Communication", icon: MessageSquare },
+      { href: "/announcements", label: "Announcements", icon: Megaphone },
+      { href: "/notifications", label: "Notifications", icon: Bell },
     ],
   },
   {
@@ -76,6 +69,8 @@ const adminNavSections = [
     label: "Account",
     items: [
       { href: "/billing", label: "Billing", icon: CreditCard },
+      { href: "/api-keys", label: "API Keys", icon: Key },
+      { href: "/activity-logs", label: "Activity Logs", icon: Activity },
       { href: "/settings", label: "Settings", icon: Settings },
     ],
   },
