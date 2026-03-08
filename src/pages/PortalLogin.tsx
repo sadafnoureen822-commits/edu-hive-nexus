@@ -255,6 +255,7 @@ export default function PortalLogin() {
     if (match.role === "student") navigate(`/${slug}/student`, { replace: true });
     else if (match.role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
     else if (match.role === "parent") navigate(`/${slug}/parent`, { replace: true });
+    else if (match.role === "principal") navigate(`/${slug}/principal`, { replace: true });
     else navigate(`/${slug}`, { replace: true });
   };
 
