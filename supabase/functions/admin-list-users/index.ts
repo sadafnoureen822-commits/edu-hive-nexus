@@ -51,30 +51,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    // List all users (paginate to get all)
-    const allUsers: { id: string; email: string; created_at: string }[] = [];
-    let page = 1;
-    const perPage = 1000;
+    // List all users via DB function (avoids auth admin API issues)
+    const { data: usersData, error: usersError } = await supabaseAdmin
+      .rpc("admin_list_auth_users");
 
-    while (true) {
-      const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers({
-        page,
-        perPage,
-      });
-      if (error) throw error;
-      if (!users || users.length === 0) break;
+    if (usersError) throw usersError;
 
-      for (const u of users) {
-        allUsers.push({
-          id: u.id,
-          email: u.email ?? "",
-          created_at: u.created_at,
-        });
-      }
-
-      if (users.length < perPage) break;
-      page++;
-    }
+    const allUsers = (usersData ?? []).map((u: any) => ({
+      id: u.id,
+      email: u.email ?? "",
+      created_at: u.created_at,
+    }));
 
     return new Response(
       JSON.stringify({ success: true, users: allUsers }),
