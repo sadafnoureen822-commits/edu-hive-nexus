@@ -161,7 +161,7 @@ export default function DomainsPage() {
   const handleAdd = () => {
     const result = domainSchema.safeParse({ domain, institution_id: instId });
     if (!result.success) { toast.error(result.error.errors[0].message); return; }
-    addMutation.mutate(result.data);
+    if (result.success) addMutation.mutate(result.data as { domain: string; institution_id: string });
   };
 
   // ── Filtered ─────────────────────────────────────────────────────────────────

@@ -65,7 +65,7 @@ export default function ModuleControlPage() {
         .select("*")
         .order("institution_id");
       if (error) throw error;
-      return (data ?? []) as ModuleRow[];
+      return (data ?? []) as unknown as ModuleRow[];
     },
   });
 
