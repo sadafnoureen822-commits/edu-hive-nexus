@@ -75,9 +75,24 @@ export default function TeacherMarksPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Enter Student Marks</h1>
-        <p className="text-sm text-muted-foreground">Record theory, practical, and viva marks per exam and subject</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Enter Student Marks</h1>
+          <p className="text-sm text-muted-foreground">Record theory, practical, and viva marks per exam and subject</p>
+        </div>
+        <ExportButton
+          data={students.map((s) => ({
+            "Student ID": s.user_id,
+            Exam: selExam?.name ?? "",
+            Subject: subjects.find((sub) => sub.id === selSubjectId)?.name ?? "",
+            Theory: getMark(s.user_id, "theory"),
+            Practical: getMark(s.user_id, "practical"),
+            Viva: getMark(s.user_id, "viva"),
+          }))}
+          fileName="student-marks"
+          sheetName="Marks"
+          disabled={!selExamSubject}
+        />
       </div>
 
       <Card className="border-border/50">

@@ -60,12 +60,19 @@ export default function TeacherCoursesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-display font-bold">My Courses</h1>
           <p className="text-sm text-muted-foreground">Create and manage your course content</p>
         </div>
-        <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> New Course</Button>
+        <div className="flex gap-2">
+          <ExportButton
+            data={courses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status, Created: c.created_at }))}
+            fileName="my-courses"
+            sheetName="Courses"
+          />
+          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> New Course</Button>
+        </div>
       </div>
 
       {isLoading ? (

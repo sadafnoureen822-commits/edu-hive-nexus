@@ -62,9 +62,20 @@ export default function TeacherAttendancePage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Attendance</h1>
-        <p className="text-sm text-muted-foreground">Mark and manage daily student attendance</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Attendance</h1>
+          <p className="text-sm text-muted-foreground">Mark and manage daily student attendance</p>
+        </div>
+        <ExportButton
+          data={students.map((s) => ({
+            "Student ID": s.user_id,
+            Date: attDate,
+            Status: getStatus(s.user_id),
+          }))}
+          fileName={`attendance-${attDate}`}
+          sheetName="Attendance"
+        />
       </div>
 
       {/* Summary */}
