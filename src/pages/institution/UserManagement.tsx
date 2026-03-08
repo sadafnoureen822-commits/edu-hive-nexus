@@ -71,33 +71,47 @@ export default function UserManagement() {
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return toast.error("Email required");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inviteEmail.trim())) return toast.error("Please enter a valid email address");
     setInviteLoading(true);
 
     try {
-      // Try to find user by email in profiles
-      const { data: existingUser } = await supabase
-        .from("profiles")
-        .select("user_id")
-        .ilike("user_id", inviteEmail) // Can't search by email directly - use edge function in prod
-        .limit(1);
-
-      // Use the admin signup approach: create invite via auth admin or fall back to direct insert
-      // For now we'll use the service-role safe approach: sign them up
+      // Sign up the user with a random password — they'll reset it via email
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: inviteEmail.trim(),
-        password: Math.random().toString(36).slice(-10) + "A1!",
+        email: inviteEmail.trim().toLowerCase(),
+        password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase() + "1!",
         options: { data: { invited_by: user?.id } },
       });
 
-      if (signUpError && !signUpError.message.includes("already registered")) {
+      if (signUpError) {
+        // If user already exists, Supabase returns "User already registered"
+        if (signUpError.message.toLowerCase().includes("already registered") || signUpError.message.toLowerCase().includes("already exists")) {
+          toast.warning("This email is already registered. Ask the user to log in — they can be added via their user ID once they've signed in.", { duration: 6000 });
+          setInviteOpen(false);
+          setInviteLoading(false);
+          return;
+        }
         throw signUpError;
       }
 
       const userId = signUpData?.user?.id;
       if (!userId) {
-        // User already exists — try to find them
-        // We'll just notify admin that user needs to log in and will be added
-        toast.warning("User already registered. Ask them to log in — they'll be added on next sign-in.");
+        toast.warning("User may already be registered. Ask them to sign in first.");
+        setInviteOpen(false);
+        setInviteLoading(false);
+        return;
+      }
+
+      // Check if already a member
+      const { data: existingMember } = await supabase
+        .from("institution_members")
+        .select("id")
+        .eq("institution_id", institutionId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (existingMember) {
+        toast.warning("This user is already a member of this institution.");
         setInviteOpen(false);
         setInviteLoading(false);
         return;
@@ -113,7 +127,7 @@ export default function UserManagement() {
 
       if (memberError) throw memberError;
 
-      toast.success(`${inviteRole} invited successfully!`);
+      toast.success(`${inviteRole.charAt(0).toUpperCase() + inviteRole.slice(1)} invited successfully! A confirmation email has been sent.`);
       qc.invalidateQueries({ queryKey: ["institution-members", institutionId] });
       setInviteOpen(false);
       setInviteEmail("");
