@@ -221,7 +221,7 @@ export default function TeacherDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{myCourses.length} course{myCourses.length !== 1 ? "s" : ""} created by you</p>
             <div className="flex gap-2">
-              <ExportButton data={myCourses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status, Created: c.created_at }))} fileName="my-courses" sheetName="Courses" />
+              <AIDataExport contextData={myCourses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status, Created: c.created_at }))} label="Export Courses" exportTitle="My Courses" fileName="my-courses" />
               <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/courses")}>
                 Manage <ArrowRight className="h-3 w-3" />
               </Button>
