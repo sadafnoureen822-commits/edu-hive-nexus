@@ -243,28 +243,42 @@ export default function Auth() {
         {/* Role access cards */}
         <div className="space-y-2">
           <p className="text-center text-xs text-muted-foreground">Sign in as</p>
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="grid grid-cols-2 gap-2">
             {[
               {
                 role: "Super Admin",
                 hint: "Platform control",
                 icon: "🛡️",
-                description: "Full platform access. Manage all institutions, billing & subscriptions.",
+                description: "Full platform access. Manage all institutions, revenue & subscription plans. After login → redirected to /admin.",
                 color: "hover:border-destructive/50 hover:bg-destructive/5",
               },
               {
                 role: "Institution Admin",
                 hint: "Manage school",
                 icon: "🏫",
-                description: "Manage your school: students, teachers, exams, fees & more.",
+                description: "Manage your school: students, teachers, exams, fees, LMS & more. After login → redirected to your school dashboard.",
                 color: "hover:border-primary/50 hover:bg-primary/5",
               },
               {
-                role: "Teacher / Student",
-                hint: "Role portal",
-                icon: "🎓",
-                description: "Access your personal portal: courses, assignments, results & attendance.",
+                role: "Teacher",
+                hint: "Courses & attendance",
+                icon: "📚",
+                description: "Access your teaching portal: courses, assignments, quizzes, attendance marking & student marks.",
                 color: "hover:border-chart-2/50 hover:bg-chart-2/5",
+              },
+              {
+                role: "Student",
+                hint: "Learning portal",
+                icon: "🎓",
+                description: "Access your learning portal: courses, quizzes, results, attendance records & certificates.",
+                color: "hover:border-chart-3/50 hover:bg-chart-3/5",
+              },
+              {
+                role: "Parent",
+                hint: "Child progress",
+                icon: "👨‍👩‍👧",
+                description: "Monitor your child's attendance, exam results, course enrollments & school announcements.",
+                color: "hover:border-chart-4/50 hover:bg-chart-4/5",
               },
             ].map((r) => (
               <button
@@ -287,7 +301,7 @@ export default function Auth() {
             ))}
           </div>
           <p className="text-center text-[10px] text-muted-foreground">
-            Tap a role to learn more, then sign in with your credentials.
+            Tap a role to see what it can access, then sign in with your credentials.
           </p>
         </div>
       </div>
