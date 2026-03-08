@@ -8,7 +8,7 @@ import { useAttendance } from "@/hooks/use-attendance";
 import { useStudentMarksByInstitution } from "@/hooks/lms/use-student-marks";
 import { useExams } from "@/hooks/exam/use-exams";
 import { useAcademicSessions } from "@/hooks/exam/use-academic-sessions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
