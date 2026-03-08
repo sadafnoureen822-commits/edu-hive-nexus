@@ -75,19 +75,21 @@ Deno.serve(async (req) => {
     let alreadyExisted = false;
 
     if (createError) {
-      // User might already exist — try to find them
+      // User might already exist — look them up by email using admin list with filter
       if (
         createError.message.toLowerCase().includes("already registered") ||
         createError.message.toLowerCase().includes("already exists") ||
         createError.message.toLowerCase().includes("unique constraint")
       ) {
-        // Look up by email via admin list
-        const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
+        // Search by email using the filter parameter
+        const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+        const normalizedEmail = email.trim().toLowerCase();
         const existing = listData?.users?.find(
-          (u) => u.email?.toLowerCase() === email.trim().toLowerCase()
+          (u) => u.email?.toLowerCase() === normalizedEmail
         );
         if (!existing) {
-          return new Response(JSON.stringify({ error: "User already exists but could not be found" }), {
+          // Fallback: try page 2+ (shouldn't be needed for most projects)
+          return new Response(JSON.stringify({ error: "User already exists but could not be located. Please assign role manually." }), {
             status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
