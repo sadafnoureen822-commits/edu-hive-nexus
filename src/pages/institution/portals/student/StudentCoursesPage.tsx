@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookOpen, Video, FileText, Clock, CheckCircle2, Play, ChevronRight, Loader2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function StudentCoursesPage() {
   const { institution } = useTenant();

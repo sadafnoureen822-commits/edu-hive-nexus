@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { HelpCircle, Clock, CheckCircle2, XCircle, Loader2, Trophy } from "lucide-react";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function StudentQuizzesPage() {
   const { institution } = useTenant();

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Award, Download, QrCode, Shield, Calendar, Hash, ExternalLink, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect } from "react";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function StudentCertificatesPage() {
   const { institution } = useTenant();

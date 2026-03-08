@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { BarChart3, Award, TrendingUp, Loader2, Star } from "lucide-react";
+import ExportButton from "@/components/ui/ExportButton";
 
 interface ExamResult {
   examName: string;

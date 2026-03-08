@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ClipboardList, Clock, TrendingUp, CheckCircle2, Upload, Loader2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function StudentAssignmentsPage() {
   const { institution } = useTenant();
