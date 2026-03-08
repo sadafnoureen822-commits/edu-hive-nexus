@@ -30,7 +30,8 @@ const PORTAL_META: Record<PortalSlug, {
     Icon: Shield,
     lightBg: "bg-blue-50 border-blue-200", iconColor: "text-blue-600", iconBg: "bg-blue-100",
     dbRoles: [],
-    allowSignup: false,
+    allowSignup: true,
+    signupNote: "Your account will be granted full Super Admin privileges immediately after sign up.",
   },
   admin: {
     label: "Institution Admin", sub: "Manage school",
@@ -137,7 +138,8 @@ export default function PortalLogin() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -145,6 +147,7 @@ export default function PortalLogin() {
         data: { full_name: fullName },
       },
     });
+
     if (error) {
       // User already exists — guide them to login instead
       if (error.message.toLowerCase().includes("already registered") || error.status === 422) {
@@ -157,9 +160,21 @@ export default function PortalLogin() {
       } else {
         toast({ title: "Signup failed", description: error.message, variant: "destructive" });
       }
-    } else {
-      setSignupDone(true);
+      setLoading(false);
+      return;
     }
+
+    // For Super Admin: call edge function to assign platform_admin role
+    if (portal === "super-admin" && signUpData.session) {
+      const { error: roleError } = await supabase.functions.invoke("assign-platform-admin");
+      if (roleError) {
+        toast({ title: "Role assignment failed", description: "Account created but admin role could not be assigned. Contact support.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+    }
+
+    setSignupDone(true);
     setLoading(false);
   };
 
@@ -287,16 +302,20 @@ export default function PortalLogin() {
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
-              <h2 className="text-xl font-display font-bold text-foreground">Account Created!</h2>
+              <h2 className="text-xl font-display font-bold text-foreground">
+                {portal === "super-admin" ? "Super Admin Account Created!" : "Account Created!"}
+              </h2>
               <p className="text-sm text-muted-foreground">
-                We've sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>.
-                Please verify your email before signing in.
+                {portal === "super-admin"
+                  ? <>Your Super Admin account has been created for <span className="font-semibold text-foreground">{email}</span>. Please verify your email, then sign in to access the platform dashboard.</>
+                  : <>We've sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>. Please verify your email before signing in.</>
+                }
               </p>
               {meta.signupNote && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-left">
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-left">
                   <div className="flex items-start gap-2">
-                    <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                    <p className="text-xs text-amber-800">{meta.signupNote}</p>
+                    <Shield className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-blue-800">{meta.signupNote}</p>
                   </div>
                 </div>
               )}
@@ -530,18 +549,6 @@ export default function PortalLogin() {
               </div>
             )}
 
-            {/* Super Admin: no signup allowed */}
-            {!meta.allowSignup && mode === "login" && (
-              <div className="mt-4 p-3 rounded-xl bg-muted/40 border border-border/40">
-                <div className="flex items-start gap-2">
-                  <Shield className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Super Admin accounts are created directly by the platform team.
-                    Contact support if you need access.
-                  </p>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
