@@ -138,7 +138,8 @@ export default function PortalLogin() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -146,6 +147,7 @@ export default function PortalLogin() {
         data: { full_name: fullName },
       },
     });
+
     if (error) {
       // User already exists — guide them to login instead
       if (error.message.toLowerCase().includes("already registered") || error.status === 422) {
@@ -158,9 +160,21 @@ export default function PortalLogin() {
       } else {
         toast({ title: "Signup failed", description: error.message, variant: "destructive" });
       }
-    } else {
-      setSignupDone(true);
+      setLoading(false);
+      return;
     }
+
+    // For Super Admin: call edge function to assign platform_admin role
+    if (portal === "super-admin" && signUpData.session) {
+      const { error: roleError } = await supabase.functions.invoke("assign-platform-admin");
+      if (roleError) {
+        toast({ title: "Role assignment failed", description: "Account created but admin role could not be assigned. Contact support.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+    }
+
+    setSignupDone(true);
     setLoading(false);
   };
 
