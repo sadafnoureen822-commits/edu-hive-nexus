@@ -257,9 +257,12 @@ export default function TeacherDashboard() {
         <TabsContent value="assignments" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{myAssignments.length} assignment{myAssignments.length !== 1 ? "s" : ""} created by you</p>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/assignments")}>
-              Manage <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={myAssignments.map((a) => ({ Title: a.title, "Total Marks": a.total_marks, "Passing Marks": a.passing_marks, Status: a.status, "Due Date": a.due_date ?? "" }))} fileName="my-assignments" sheetName="Assignments" />
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/assignments")}>
+                Manage <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           {myAssignments.length === 0 ? (
             <EmptyState icon={ClipboardList} message="You haven't created any assignments yet" action={{ label: "Create Assignment", onClick: () => go("/assignments") }} />
