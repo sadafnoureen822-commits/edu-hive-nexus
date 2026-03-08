@@ -39,7 +39,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 type InstitutionRole = Enums<"institution_role">;
-const ALL_ROLES: InstitutionRole[] = ["admin", "teacher", "student", "parent", "staff"];
+const ALL_ROLES: InstitutionRole[] = ["admin", "teacher", "student", "parent", "principal", "exam_controller"];
 
 export default function UserManagement() {
   const { institution } = useTenant();
