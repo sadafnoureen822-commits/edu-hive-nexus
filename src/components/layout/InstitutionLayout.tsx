@@ -192,7 +192,8 @@ export default function InstitutionLayout() {
       if (role === "student") navigate(`${basePath}/student`, { replace: true });
       else if (role === "teacher") navigate(`${basePath}/teacher`, { replace: true });
       else if (role === "parent") navigate(`${basePath}/parent`, { replace: true });
-      // admin stays at basePath (dashboard)
+      else if (role === "principal") navigate(`${basePath}/principal`, { replace: true });
+      // admin + exam_controller stays at basePath (dashboard)
     }
   }, [slug, loading, membership, role, location.pathname, navigate]);
 
