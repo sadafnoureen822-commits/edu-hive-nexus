@@ -115,11 +115,28 @@ export default function RoleAssignmentPage() {
   // ── Mutations ──────────────────────────────────────────────────────────────
   const assignMutation = useMutation({
     mutationFn: async ({ userId, institutionId, role }: { userId: string; institutionId: string; role: string }) => {
-      const { error } = await supabase.from("institution_members").upsert(
-        { user_id: userId, institution_id: institutionId, role },
-        { onConflict: "user_id,institution_id" }
-      );
-      if (error) throw error;
+      // Check if membership already exists
+      const { data: existing } = await supabase
+        .from("institution_members")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("institution_id", institutionId)
+        .maybeSingle();
+
+      if (existing) {
+        // Update existing role
+        const { error } = await supabase
+          .from("institution_members")
+          .update({ role: role as any })
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from("institution_members")
+          .insert({ user_id: userId, institution_id: institutionId, role: role as any });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       toast.success(editMember ? "Role updated successfully" : "Role assigned successfully");
