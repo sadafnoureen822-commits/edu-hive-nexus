@@ -331,7 +331,7 @@ export default function RoleAssignmentPage() {
             disabled={members.length === 0}
           >
             <Trash2 className="h-4 w-4" />
-            Remove All Users
+            Delete a User
           </Button>
         </div>
       </div>
