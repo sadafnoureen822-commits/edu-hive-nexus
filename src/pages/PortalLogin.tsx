@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import {
   Building2, Mail, Lock, User, Eye, EyeOff, Shield, School,
-  GraduationCap, Users, ArrowLeft, AlertCircle, CheckCircle2, Info,
+  GraduationCap, Users, ArrowLeft, AlertCircle, CheckCircle2, Info, ShieldCheck,
 } from "lucide-react";
 
 type PortalSlug = "super-admin" | "admin" | "teacher" | "student" | "parent" | "principal";
