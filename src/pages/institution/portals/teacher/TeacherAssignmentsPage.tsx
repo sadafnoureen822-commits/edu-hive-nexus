@@ -177,7 +177,16 @@ function SubmissionsPanel({ assignmentId, institutionId }: { assignmentId: strin
   return (
     <>
       <Card className="border-border/50">
-        <CardHeader className="pb-3"><CardTitle className="text-sm">Submissions ({submissions.length})</CardTitle></CardHeader>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">Submissions ({submissions.length})</CardTitle>
+            <ExportButton
+              data={submissions.map((s) => ({ "Student ID": s.student_id, "Submitted At": format(new Date(s.submitted_at), "dd MMM yyyy"), Status: s.status, "Marks Obtained": s.marks_obtained ?? "", Feedback: s.feedback ?? "" }))}
+              fileName="assignment-submissions"
+              sheetName="Submissions"
+            />
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader><TableRow>
