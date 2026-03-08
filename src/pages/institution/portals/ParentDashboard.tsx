@@ -314,7 +314,7 @@ export default function ParentDashboard() {
           <TabsContent value="results" className="mt-4">
             <div className="flex justify-between items-center mb-3">
               <p className="text-xs text-muted-foreground">{marks.length} result{marks.length !== 1 ? "s" : ""}</p>
-              <ExportButton data={marks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} fileName={`results-${currentChild?.fullName ?? "child"}`} sheetName="Results" />
+              <AIDataExport contextData={marks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} label="Export Results" exportTitle="Results" fileName={`results-${currentChild?.fullName ?? "child"}`} />
             </div>
             {childDataLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
