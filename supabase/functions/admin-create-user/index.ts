@@ -30,13 +30,16 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
+    // Verify caller is authenticated
     const { data: { user: callerUser }, error: callerError } = await supabaseClient.auth.getUser();
     if (callerError || !callerUser) {
+      console.error("Auth error:", callerError);
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Verify caller is platform admin
     const { data: platformRole } = await supabaseAdmin
       .from("platform_roles")
       .select("role")
@@ -64,52 +67,48 @@ Deno.serve(async (req) => {
     let userId: string;
     let alreadyExisted = false;
 
-    // Try to create the user first
-    const { data: newUserData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email: normalizedEmail,
-      password: pwd,
-      email_confirm: true,
-      user_metadata: { full_name: full_name?.trim() ?? "" },
-    });
+    console.log("Looking up existing user by email:", normalizedEmail);
 
-    if (createError) {
-      // User already exists — find them via listUsers with page search
-      const isAlreadyExists =
-        createError.message.toLowerCase().includes("already") ||
-        createError.message.toLowerCase().includes("registered") ||
-        createError.message.toLowerCase().includes("exists") ||
-        createError.message.toLowerCase().includes("unique");
+    // FIRST: Check if user already exists via the DB function (avoids auth API 422 errors)
+    const { data: existingUserId, error: lookupError } = await supabaseAdmin
+      .rpc("get_user_id_by_email", { p_email: normalizedEmail });
 
-      if (!isAlreadyExists) {
+    console.log("Lookup result:", { existingUserId, lookupError });
+
+    if (existingUserId) {
+      // User already exists — just assign the role
+      userId = existingUserId;
+      alreadyExisted = true;
+      console.log("User already exists with ID:", userId);
+    } else {
+      // User does not exist — create them
+      console.log("Creating new user:", normalizedEmail);
+      const { data: newUserData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: normalizedEmail,
+        password: pwd,
+        email_confirm: true,
+        user_metadata: { full_name: full_name?.trim() ?? "" },
+      });
+
+      if (createError) {
+        console.error("Create user error:", createError);
         return new Response(JSON.stringify({ error: createError.message }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      // Look up the existing user's ID via DB function (bypasses listUsers pagination issues)
-      const { data: existingUserId, error: lookupError } = await supabaseAdmin
-        .rpc("get_user_id_by_email", { p_email: normalizedEmail });
-
-      if (lookupError || !existingUserId) {
-        return new Response(
-          JSON.stringify({ error: "User already exists but could not be located. Please assign the role manually." }),
-          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      userId = existingUserId;
-      alreadyExisted = true;
-    } else {
       userId = newUserData.user!.id;
+      console.log("New user created with ID:", userId);
     }
 
     // Upsert profile
-    await supabaseAdmin.from("profiles").upsert(
+    const { error: profileErr } = await supabaseAdmin.from("profiles").upsert(
       { user_id: userId, full_name: full_name?.trim() ?? "" },
       { onConflict: "user_id" }
     );
+    if (profileErr) console.error("Profile upsert error:", profileErr);
 
-    // Check if membership already exists for this institution
+    // Upsert institution membership
     const { data: existingMember } = await supabaseAdmin
       .from("institution_members")
       .select("id")
@@ -122,19 +121,28 @@ Deno.serve(async (req) => {
         .from("institution_members")
         .update({ role })
         .eq("id", existingMember.id);
-      if (updateErr) throw updateErr;
+      if (updateErr) {
+        console.error("Member update error:", updateErr);
+        throw updateErr;
+      }
     } else {
       const { error: insertErr } = await supabaseAdmin
         .from("institution_members")
         .insert({ user_id: userId, institution_id, role });
-      if (insertErr) throw insertErr;
+      if (insertErr) {
+        console.error("Member insert error:", insertErr);
+        throw insertErr;
+      }
     }
+
+    console.log("Done. already_existed:", alreadyExisted);
 
     return new Response(
       JSON.stringify({ success: true, user_id: userId, already_existed: alreadyExisted }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
+    console.error("Unexpected error:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
