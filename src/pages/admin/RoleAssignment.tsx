@@ -708,7 +708,7 @@ export default function RoleAssignmentPage() {
                     </div>
                   )}
                   {selUserId && (
-                    <p className="text-xs text-green-600 font-medium">
+                    <p className="text-xs text-primary font-medium">
                       ✓ User selected: <span className="font-mono">{selUserId.slice(0, 16)}…</span>
                     </p>
                   )}
