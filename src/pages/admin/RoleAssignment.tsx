@@ -652,7 +652,7 @@ export default function RoleAssignmentPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>User</TableHead>
-                      <TableHead>User ID</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Assignments</TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
@@ -660,6 +660,7 @@ export default function RoleAssignmentPage() {
                   <TableBody>
                     {filteredUsers.map((p) => {
                       const userMemberships = members.filter((m) => m.user_id === p.user_id);
+                      const email = emailMap[p.user_id];
                       return (
                         <TableRow key={p.user_id}>
                           <TableCell>
@@ -673,9 +674,14 @@ export default function RoleAssignmentPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-xs text-muted-foreground font-mono">
-                              {p.user_id.slice(0, 16)}…
-                            </span>
+                            {email ? (
+                              <div className="flex items-center gap-1.5">
+                                <Mail className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                                <span className="text-sm text-muted-foreground">{email}</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground italic">—</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             {userMemberships.length === 0 ? (
