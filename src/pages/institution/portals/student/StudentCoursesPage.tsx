@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookOpen, Video, FileText, Clock, CheckCircle2, Play, ChevronRight, Loader2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function StudentCoursesPage() {
   const { institution } = useTenant();
@@ -62,9 +63,21 @@ export default function StudentCoursesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">My Courses</h1>
-        <p className="text-sm text-muted-foreground">{published.length} course{published.length !== 1 ? "s" : ""} available</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-display font-bold">My Courses</h1>
+          <p className="text-sm text-muted-foreground">{published.length} course{published.length !== 1 ? "s" : ""} available</p>
+        </div>
+        <ExportButton
+          data={published.map((c) => ({
+            Title: c.title,
+            Description: c.description ?? "",
+            Status: c.status,
+            Enrolled: enrolledIds.has(c.id) ? "Yes" : "No",
+          }))}
+          fileName="my-courses"
+          sheetName="Courses"
+        />
       </div>
 
       {published.length === 0 ? (

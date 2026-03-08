@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Award, Download, QrCode, Shield, Calendar, Hash, ExternalLink, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect } from "react";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function StudentCertificatesPage() {
   const { institution } = useTenant();
@@ -27,9 +28,21 @@ export default function StudentCertificatesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">My Certificates</h1>
-        <p className="text-sm text-muted-foreground">{myCerts.length} certificate{myCerts.length !== 1 ? "s" : ""} issued</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-display font-bold">My Certificates</h1>
+          <p className="text-sm text-muted-foreground">{myCerts.length} certificate{myCerts.length !== 1 ? "s" : ""} issued</p>
+        </div>
+        <ExportButton
+          data={myCerts.map((c) => ({
+            "Serial Number": c.serial_number,
+            "Issued At": format(new Date(c.issued_at), "dd MMM yyyy"),
+            "Template ID": c.template_id,
+            Revoked: c.is_revoked ? "Yes" : "No",
+          }))}
+          fileName="my-certificates"
+          sheetName="Certificates"
+        />
       </div>
 
       {myCerts.length === 0 ? (

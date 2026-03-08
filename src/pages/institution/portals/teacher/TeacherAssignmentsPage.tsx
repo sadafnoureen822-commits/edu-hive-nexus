@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, ClipboardList, Edit, Trash2, Loader2, CheckCircle2, Clock, FileText, Star } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function TeacherAssignmentsPage() {
   const { institution } = useTenant();
@@ -57,12 +58,19 @@ export default function TeacherAssignmentsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-display font-bold">Assignments</h1>
           <p className="text-sm text-muted-foreground">Create assignments and grade submissions</p>
         </div>
-        <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> New Assignment</Button>
+        <div className="flex gap-2">
+          <ExportButton
+            data={myAssignments.map((a) => ({ Title: a.title, Description: a.description ?? "", "Total Marks": a.total_marks, "Passing Marks": a.passing_marks, Status: a.status, "Due Date": a.due_date ?? "" }))}
+            fileName="assignments"
+            sheetName="Assignments"
+          />
+          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> New Assignment</Button>
+        </div>
       </div>
 
       <Tabs defaultValue="assignments">

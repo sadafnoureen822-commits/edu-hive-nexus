@@ -19,6 +19,7 @@ import { useSubjects } from "@/hooks/exam/use-subjects";
 import { useGradingScales } from "@/hooks/exam/use-grading-scales";
 import { useExamSubjects } from "@/hooks/exam/use-exam-subjects";
 import { useDateSheets } from "@/hooks/exam/use-date-sheets";
+import ExportButton from "@/components/ui/ExportButton";
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -198,9 +199,15 @@ export default function ExamManagement() {
           <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">Exam Management</h1>
           <p className="text-muted-foreground mt-1">Create and manage examinations, assign subjects, and build date sheets</p>
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild><Button className="gap-2"><Plus className="h-4 w-4" />Create Exam</Button></DialogTrigger>
-          <DialogContent className="max-w-lg">
+        <div className="flex gap-2">
+          <ExportButton
+            data={exams.map((e: any) => ({ Name: e.name, Type: e.exam_type, Status: e.status, "Start Date": e.start_date ?? "", "End Date": e.end_date ?? "" }))}
+            fileName="exams"
+            sheetName="Exams"
+          />
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild><Button className="gap-2"><Plus className="h-4 w-4" />Create Exam</Button></DialogTrigger>
+            <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>Create Examination</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div><Label>Exam Name</Label><Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Mid-Term Exam 2025" /></div>
@@ -260,7 +267,8 @@ export default function ExamManagement() {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Exam detail dialog */}

@@ -12,6 +12,7 @@ import {
   XCircle, Loader2, BarChart3, Star, Clock, Megaphone, HeartHandshake,
 } from "lucide-react";
 import { format } from "date-fns";
+import ExportButton from "@/components/ui/ExportButton";
 
 interface ChildInfo { userId: string; fullName: string; relationship: string }
 interface AttSummary { total: number; present: number; absent: number; late: number; pct: number; recent: { date: string; status: string }[] }
@@ -217,12 +218,23 @@ export default function ParentDashboard() {
       {/* Tabs */}
       {children.length > 0 && (
         <Tabs defaultValue="attendance">
-          <TabsList className="grid grid-cols-4 w-full max-w-lg">
-            <TabsTrigger value="attendance">Attendance</TabsTrigger>
-            <TabsTrigger value="results">Results</TabsTrigger>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
-            <TabsTrigger value="announcements">Notices</TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <TabsList className="grid grid-cols-4 w-full max-w-lg">
+              <TabsTrigger value="attendance">Attendance</TabsTrigger>
+              <TabsTrigger value="results">Results</TabsTrigger>
+              <TabsTrigger value="courses">Courses</TabsTrigger>
+              <TabsTrigger value="announcements">Notices</TabsTrigger>
+            </TabsList>
+            <ExportButton
+              data={[
+                ...attendance ? attendance.recent.map((a) => ({ Type: "Attendance", Date: a.date, Status: a.status })) : [],
+                ...marks.map((m, i) => ({ Type: "Marks", Index: i + 1, "Total Marks": m.total_marks ?? "", Status: m.status, Remarks: m.remarks ?? "" })),
+                ...certs.map((c) => ({ Type: "Certificate", Serial: c.serial_number, "Issued At": c.issued_at, Template: c.template })),
+              ]}
+              fileName={`child-report-${currentChild?.fullName ?? "child"}`}
+              sheetName="Child Report"
+            />
+          </div>
 
           {/* Attendance */}
           <TabsContent value="attendance" className="mt-4 space-y-4">

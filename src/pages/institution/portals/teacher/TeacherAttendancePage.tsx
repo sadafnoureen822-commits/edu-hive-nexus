@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CalendarCheck, Save, CheckCircle2, Clock, AlertCircle, Circle, Users, BarChart3, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import ExportButton from "@/components/ui/ExportButton";
 
 type AttStatus = "present" | "absent" | "late" | "excused";
 
@@ -61,9 +62,20 @@ export default function TeacherAttendancePage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Attendance</h1>
-        <p className="text-sm text-muted-foreground">Mark and manage daily student attendance</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Attendance</h1>
+          <p className="text-sm text-muted-foreground">Mark and manage daily student attendance</p>
+        </div>
+        <ExportButton
+          data={students.map((s) => ({
+            "Student ID": s.user_id,
+            Date: attDate,
+            Status: getStatus(s.user_id),
+          }))}
+          fileName={`attendance-${attDate}`}
+          sheetName="Attendance"
+        />
       </div>
 
       {/* Summary */}
