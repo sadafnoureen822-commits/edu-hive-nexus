@@ -97,7 +97,9 @@ function CertificateViewer({ cert, template, institutionName, onClose }: {
   const verificationUrl = `${window.location.origin}/verify?serial=${cert.serial_number}`;
 
   useEffect(() => {
-    QRCode.toDataURL(verificationUrl, { width: 200, margin: 1 }).then(setQrUrl);
+    import("qrcode").then((QRCode) => {
+      QRCode.toDataURL(verificationUrl, { width: 200, margin: 1 }).then(setQrUrl);
+    });
   }, [verificationUrl]);
 
   const printCertificate = () => {
