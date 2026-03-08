@@ -179,9 +179,10 @@ export default function StudentDashboard() {
         <TabsContent value="courses" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{publishedCourses.length} published course{publishedCourses.length !== 1 ? "s" : ""}</p>
-            <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/courses")}>
-              View All <ArrowRight className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton data={publishedCourses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status }))} fileName="my-courses" sheetName="Courses" />
+              <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/courses")}>View All <ArrowRight className="h-3 w-3" /></Button>
+            </div>
           </div>
           {publishedCourses.length === 0 ? (
             <EmptyState icon={BookOpen} message="No courses published yet" />
