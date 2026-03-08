@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import ExportButton from "@/components/ui/ExportButton";
+import AIDataExport from "@/components/ui/AIDataExport";
 
 type AttStatus = "present" | "absent" | "late" | "excused";
 

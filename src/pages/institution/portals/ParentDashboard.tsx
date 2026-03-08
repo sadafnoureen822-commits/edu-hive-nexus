@@ -12,7 +12,7 @@ import {
   XCircle, Loader2, BarChart3, Star, Clock, Megaphone, HeartHandshake,
 } from "lucide-react";
 import { format } from "date-fns";
-import ExportButton from "@/components/ui/ExportButton";
+import AIDataExport from "@/components/ui/AIDataExport";
 
 interface ChildInfo { userId: string; fullName: string; relationship: string }
 interface AttSummary { total: number; present: number; absent: number; late: number; pct: number; recent: { date: string; status: string }[] }

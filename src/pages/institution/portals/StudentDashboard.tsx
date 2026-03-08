@@ -18,7 +18,7 @@ import {
   BarChart3, Star, GraduationCap, Download,
 } from "lucide-react";
 import { format } from "date-fns";
-import ExportButton from "@/components/ui/ExportButton";
+import AIDataExport from "@/components/ui/AIDataExport";
 
 export default function StudentDashboard() {
   const { institution } = useTenant();
