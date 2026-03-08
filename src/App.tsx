@@ -140,11 +140,12 @@ function App() {
               <Route path="notifications" element={<NotificationCenter />} />
               <Route path="activity-logs" element={<ActivityLogsPage />} />
               <Route path="api-keys" element={<ApiKeysPage />} />
-              {/* Role Portals */}
+      {/* Role Portals */}
               <Route path="student" element={<StudentDashboard />} />
               <Route path="teacher" element={<TeacherDashboard />} />
               <Route path="marks" element={<MarksResultsPage />} />
               <Route path="parent" element={<ParentDashboard />} />
+              <Route path="principal" element={<PrincipalDashboard />} />
             </Route>
 
             {/* Public site routes */}

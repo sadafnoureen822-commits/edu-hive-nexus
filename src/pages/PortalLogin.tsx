@@ -15,7 +15,7 @@ import {
   GraduationCap, Users, ArrowLeft, AlertCircle, CheckCircle2, Info,
 } from "lucide-react";
 
-type PortalSlug = "super-admin" | "admin" | "teacher" | "student" | "parent";
+type PortalSlug = "super-admin" | "admin" | "teacher" | "student" | "parent" | "principal";
 type Mode = "login" | "signup" | "forgot";
 
 const PORTAL_META: Record<PortalSlug, {
