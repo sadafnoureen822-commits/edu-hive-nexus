@@ -180,7 +180,7 @@ export default function StudentDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{publishedCourses.length} published course{publishedCourses.length !== 1 ? "s" : ""}</p>
             <div className="flex gap-2">
-              <ExportButton data={publishedCourses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status }))} fileName="my-courses" sheetName="Courses" />
+              <AIDataExport contextData={publishedCourses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status }))} label="Export" exportTitle="My Courses" fileName="my-courses" />
               <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/courses")}>View All <ArrowRight className="h-3 w-3" /></Button>
             </div>
           </div>
