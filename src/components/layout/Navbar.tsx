@@ -41,10 +41,10 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
               Sign In
             </Button>
-            <Button variant="default" size="sm">
+            <Button variant="default" size="sm" onClick={() => navigate("/auth")}>
               Start Free Trial
             </Button>
           </div>
