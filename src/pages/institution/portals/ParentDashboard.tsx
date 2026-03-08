@@ -353,7 +353,7 @@ export default function ParentDashboard() {
           <TabsContent value="courses" className="mt-4">
             <div className="flex justify-between items-center mb-3">
               <p className="text-xs text-muted-foreground">{enrollments.length} enrollment{enrollments.length !== 1 ? "s" : ""}</p>
-              <ExportButton data={enrollments.map((e) => ({ Course: e.title, Status: e.status }))} fileName={`courses-${currentChild?.fullName ?? "child"}`} sheetName="Courses" />
+              <AIDataExport contextData={enrollments.map((e) => ({ Course: e.title, Status: e.status }))} label="Export Courses" exportTitle="Course Enrollments" fileName={`courses-${currentChild?.fullName ?? "child"}`} />
             </div>
             {childDataLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>

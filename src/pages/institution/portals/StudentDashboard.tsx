@@ -326,7 +326,7 @@ export default function StudentDashboard() {
         <TabsContent value="attendance" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{attendance.length} record{attendance.length !== 1 ? "s" : ""}</p>
-            <ExportButton data={attendance.map((a) => ({ Date: a.date, Status: a.status }))} fileName="my-attendance" sheetName="Attendance" />
+            <AIDataExport contextData={attendance.map((a) => ({ Date: a.date, Status: a.status }))} label="Export" exportTitle="My Attendance" fileName="my-attendance" />
           </div>
           {/* Summary */}
           <div className="grid grid-cols-3 gap-3 mb-4">

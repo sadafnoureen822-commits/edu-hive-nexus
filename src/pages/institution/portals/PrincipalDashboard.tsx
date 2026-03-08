@@ -276,7 +276,7 @@ export default function PrincipalDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{exams.length} exam{exams.length !== 1 ? "s" : ""} total</p>
             <div className="flex gap-2">
-              <ExportButton data={exams.map((e) => ({ Name: e.name, Type: e.exam_type, Status: e.status, "Start Date": e.start_date ?? "", "End Date": e.end_date ?? "" }))} fileName="exams" sheetName="Exams" />
+              <AIDataExport contextData={exams.map((e) => ({ Name: e.name, Type: e.exam_type, Status: e.status, "Start Date": e.start_date ?? "", "End Date": e.end_date ?? "" }))} label="Export" exportTitle="Exams" fileName="exams" />
               <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/exams")}>
                 Manage Exams <ArrowRight className="h-3 w-3" />
               </Button>
