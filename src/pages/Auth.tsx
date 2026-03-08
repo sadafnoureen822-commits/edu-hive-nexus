@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Mail, Lock, User } from "lucide-react";
+import { Building2, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,22 +14,82 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // After login: detect role and redirect accordingly
+  const handlePostLogin = async (userId: string) => {
+    // Check if platform admin
+    const { data: platformRole } = await supabase
+      .from("platform_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (platformRole?.role === "platform_admin") {
+      navigate("/admin");
+      return;
+    }
+
+    // Check institution membership
+    const { data: memberships } = await supabase
+      .from("institution_members")
+      .select("institution_id, role, institutions!institution_id(slug)")
+      .eq("user_id", userId)
+      .limit(1);
+
+    if (memberships && memberships.length > 0) {
+      const m = memberships[0] as any;
+      const slug = m.institutions?.slug;
+      const role = m.role;
+
+      if (slug) {
+        if (role === "student") navigate(`/${slug}/student`);
+        else if (role === "teacher") navigate(`/${slug}/teacher`);
+        else if (role === "parent") navigate(`/${slug}/parent`);
+        else navigate(`/${slug}`); // admin / staff
+        return;
+      }
+    }
+
+    // Fallback: go to admin (they'll see "no institution" message)
+    navigate("/admin");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+    if (forgotMode) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Email sent!", description: "Check your inbox for the password reset link." });
+        setForgotMode(false);
+      }
+      setLoading(false);
+      return;
+    }
+
     if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         toast({ title: "Login failed", description: error.message, variant: "destructive" });
-      } else {
+      } else if (data.user) {
         toast({ title: "Welcome back!" });
-        navigate("/admin");
+        await handlePostLogin(data.user.id);
       }
     } else {
+      if (!fullName.trim()) {
+        toast({ title: "Full name required", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -53,26 +113,30 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-8">
+      <div className="w-full max-w-md space-y-6">
+        <div className="flex items-center justify-center gap-2">
           <div className="feature-icon">
             <Building2 className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Multi-Tenant Platform</h1>
+          <h1 className="text-2xl font-display font-bold text-foreground">EduCloud Platform</h1>
         </div>
 
         <Card className="border-border/50 shadow-lg">
-          <CardHeader className="text-center">
-            <CardTitle className="font-display">{isLogin ? "Welcome Back" : "Create Account"}</CardTitle>
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="font-display">
+              {forgotMode ? "Reset Password" : isLogin ? "Welcome Back" : "Create Account"}
+            </CardTitle>
             <CardDescription>
-              {isLogin
-                ? "Sign in to manage your institutions"
+              {forgotMode
+                ? "Enter your email to receive a reset link"
+                : isLogin
+                ? "Sign in to access your portal"
                 : "Register to get started with the platform"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
+              {!isLogin && !forgotMode && (
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name</Label>
                   <div className="relative">
@@ -84,7 +148,7 @@ export default function Auth() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="pl-10"
-                      required
+                      required={!isLogin}
                     />
                   </div>
                 </div>
@@ -106,39 +170,89 @@ export default function Auth() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
-                    required
-                    minLength={6}
-                  />
+              {!forgotMode && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    {isLogin && (
+                      <button
+                        type="button"
+                        onClick={() => setForgotMode(true)}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10"
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
+                {loading
+                  ? "Please wait..."
+                  : forgotMode
+                  ? "Send Reset Link"
+                  : isLogin
+                  ? "Sign In"
+                  : "Create Account"}
               </Button>
             </form>
 
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-sm text-primary hover:underline"
-              >
-                {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-              </button>
+            <div className="mt-4 text-center space-y-2">
+              {forgotMode ? (
+                <button
+                  type="button"
+                  onClick={() => setForgotMode(false)}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Back to sign in
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-sm text-primary hover:underline"
+                >
+                  {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                </button>
+              )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Role hint cards */}
+        <div className="grid grid-cols-3 gap-2 text-center">
+          {[
+            { role: "Super Admin", hint: "Platform control" },
+            { role: "Institution Admin", hint: "Manage school" },
+            { role: "Teacher / Student", hint: "Role portal" },
+          ].map((r) => (
+            <div key={r.role} className="p-3 rounded-xl border border-border/50 bg-card">
+              <p className="text-xs font-semibold text-foreground">{r.role}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{r.hint}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
