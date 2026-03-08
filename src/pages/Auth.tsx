@@ -49,7 +49,38 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Navigate to the correct portal after login based on role
+  // Navigate to the correct portal after login — parallel queries for speed
+  const handlePostLogin = async (userId: string) => {
+    const [platformRes, memberRes] = await Promise.all([
+      supabase.from("platform_roles").select("role").eq("user_id", userId).maybeSingle(),
+      supabase
+        .from("institution_members")
+        .select("institution_id, role, institutions!institution_id(slug)")
+        .eq("user_id", userId)
+        .limit(1),
+    ]);
+
+    if (platformRes.data?.role === "platform_admin") {
+      navigate("/admin");
+      return;
+    }
+
+    const memberships = memberRes.data;
+    if (memberships && memberships.length > 0) {
+      const m = memberships[0] as any;
+      const slug = m.institutions?.slug;
+      const role = m.role;
+      if (slug) {
+        if (role === "student") navigate(`/${slug}/student`);
+        else if (role === "teacher") navigate(`/${slug}/teacher`);
+        else if (role === "parent") navigate(`/${slug}/parent`);
+        else navigate(`/${slug}`);
+        return;
+      }
+    }
+
+    navigate("/admin");
+  };
   const handlePostLogin = async (userId: string) => {
     const { data: platformRole } = await supabase
       .from("platform_roles")
