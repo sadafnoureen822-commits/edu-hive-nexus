@@ -48,6 +48,8 @@ import ActivityLogsPage from "./pages/institution/ActivityLogsPage";
 import StudentPromotionsPage from "./pages/institution/StudentPromotionsPage";
 import ApiKeysPage from "./pages/institution/ApiKeysPage";
 import PublicSite from "./pages/public/PublicSite";
+import ResetPassword from "./pages/ResetPassword";
+import MarksResultsPage from "./pages/institution/MarksResultsPage";
 import CertificateVerification from "./pages/public/CertificateVerification";
 
 const queryClient = new QueryClient();

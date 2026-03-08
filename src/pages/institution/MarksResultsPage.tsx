@@ -117,7 +117,7 @@ export default function MarksResultsPage() {
   const loadResults = async () => {
     if (!selectedExam) return;
     setLoadingMarks(true);
-    const { data: marksData } = await supabase
+    const { data: marksData } = await (supabase as any)
       .from("student_marks")
       .select("*, exam_subjects!exam_subject_id(subject_id, total_marks, passing_marks, subjects!subject_id(name))")
       .eq("exam_id", selectedExam)
