@@ -25,13 +25,16 @@ export const useTenant = () => useContext(TenantContext);
 
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { slug } = useParams<{ slug: string }>();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [membership, setMembership] = useState<InstitutionMember | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Wait for auth to finish loading before fetching tenant
+    if (authLoading) return;
+
     if (!slug) {
       setLoading(false);
       setError("No institution specified");
@@ -74,7 +77,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     };
 
     fetchTenant();
-  }, [slug, user]);
+  }, [slug, user, authLoading]);
 
   return (
     <TenantContext.Provider value={{ institution, membership, loading, error }}>

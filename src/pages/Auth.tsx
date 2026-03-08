@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,10 +47,18 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const from = (location.state as any)?.from?.pathname || null;
 
   // Navigate to the correct portal after login — parallel queries for speed
   const handlePostLogin = async (userId: string) => {
+    // If there's a saved intended destination, go there first
+    if (from && from !== "/auth") {
+      navigate(from, { replace: true });
+      return;
+    }
+
     const [platformRes, memberRes] = await Promise.all([
       supabase.from("platform_roles").select("role").eq("user_id", userId).maybeSingle(),
       supabase

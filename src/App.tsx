@@ -52,7 +52,15 @@ import ResetPassword from "./pages/ResetPassword";
 import MarksResultsPage from "./pages/institution/MarksResultsPage";
 import CertificateVerification from "./pages/public/CertificateVerification";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 2,   // 2 minutes — avoid refetch on every focus
+      retry: 1,                    // Only retry once on failure
+      refetchOnWindowFocus: false, // Don't refetch just because window gains focus
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
