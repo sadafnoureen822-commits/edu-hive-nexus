@@ -302,16 +302,20 @@ export default function PortalLogin() {
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
-              <h2 className="text-xl font-display font-bold text-foreground">Account Created!</h2>
+              <h2 className="text-xl font-display font-bold text-foreground">
+                {portal === "super-admin" ? "Super Admin Account Created!" : "Account Created!"}
+              </h2>
               <p className="text-sm text-muted-foreground">
-                We've sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>.
-                Please verify your email before signing in.
+                {portal === "super-admin"
+                  ? <>Your Super Admin account has been created for <span className="font-semibold text-foreground">{email}</span>. Please verify your email, then sign in to access the platform dashboard.</>
+                  : <>We've sent a confirmation link to <span className="font-semibold text-foreground">{email}</span>. Please verify your email before signing in.</>
+                }
               </p>
               {meta.signupNote && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-left">
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-left">
                   <div className="flex items-start gap-2">
-                    <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                    <p className="text-xs text-amber-800">{meta.signupNote}</p>
+                    <Shield className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-blue-800">{meta.signupNote}</p>
                   </div>
                 </div>
               )}
