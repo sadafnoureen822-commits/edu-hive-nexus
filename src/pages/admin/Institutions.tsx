@@ -159,6 +159,7 @@ export default function InstitutionsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card className="border-border/50">
