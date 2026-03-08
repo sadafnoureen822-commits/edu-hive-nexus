@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -25,44 +25,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  // Prevent duplicate platform_roles queries when both getSession + onAuthStateChange fire
+  const adminChecked = useRef<string | null>(null);
+
+  const checkPlatformAdmin = async (userId: string) => {
+    if (adminChecked.current === userId) return;
+    adminChecked.current = userId;
+    const { data } = await supabase
+      .from("platform_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .maybeSingle();
+    setIsPlatformAdmin(data?.role === "platform_admin");
+  };
 
   useEffect(() => {
+    // Set up listener FIRST before getSession to avoid race conditions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-
         if (session?.user) {
-          // Check platform admin status
-          const { data } = await supabase
-            .from("platform_roles")
-            .select("role")
-            .eq("user_id", session.user.id)
-            .maybeSingle();
-          setIsPlatformAdmin(data?.role === "platform_admin");
+          await checkPlatformAdmin(session.user.id);
         } else {
+          adminChecked.current = null;
           setIsPlatformAdmin(false);
         }
-
         setLoading(false);
       }
     );
 
+    // Get initial session (onAuthStateChange will also fire for this, ref prevents double query)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        supabase
-          .from("platform_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .maybeSingle()
-          .then(({ data }) => {
-            setIsPlatformAdmin(data?.role === "platform_admin");
-            setLoading(false);
-          });
-      } else {
+      if (!session) {
         setLoading(false);
       }
     });
@@ -71,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    adminChecked.current = null;
     await supabase.auth.signOut();
     setIsPlatformAdmin(false);
   };
