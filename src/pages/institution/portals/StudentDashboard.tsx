@@ -287,7 +287,7 @@ export default function StudentDashboard() {
         <TabsContent value="results" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{myMarks.length} result{myMarks.length !== 1 ? "s" : ""}</p>
-            <ExportButton data={myMarks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Theory: m.theory_marks ?? "", Practical: m.practical_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} fileName="my-results" sheetName="Results" />
+            <AIDataExport contextData={myMarks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Theory: m.theory_marks ?? "", Practical: m.practical_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} label="Export" exportTitle="My Results" fileName="my-results" />
           </div>
           {myMarks.length === 0 ? (
             <EmptyState icon={BarChart3} message="No results published yet" />
