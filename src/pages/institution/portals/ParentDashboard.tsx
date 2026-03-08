@@ -12,7 +12,7 @@ import {
   XCircle, Loader2, BarChart3, Star, Clock, Megaphone, HeartHandshake,
 } from "lucide-react";
 import { format } from "date-fns";
-import ExportButton from "@/components/ui/ExportButton";
+import AIDataExport from "@/components/ui/AIDataExport";
 
 interface ChildInfo { userId: string; fullName: string; relationship: string }
 interface AttSummary { total: number; present: number; absent: number; late: number; pct: number; recent: { date: string; status: string }[] }
@@ -134,16 +134,16 @@ export default function ParentDashboard() {
           </h1>
           <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
-        <ExportButton
-          data={[
+        <AIDataExport
+          contextData={[
             ...(attendance?.recent ?? []).map((a) => ({ Section: "Attendance", Date: a.date, Status: a.status })),
             ...marks.map((m, i) => ({ Section: "Results", "#": i + 1, Score: m.total_marks ?? "", Status: m.status, Remarks: m.remarks ?? "" })),
             ...enrollments.map((e) => ({ Section: "Courses", Title: e.title, Status: e.status })),
             ...certs.map((c) => ({ Section: "Certificates", Serial: c.serial_number, "Issued At": c.issued_at, Template: c.template })),
           ]}
-          fileName={`parent-portal-${currentChild?.fullName ?? "child"}-full-export`}
-          sheetName="Child Report"
-          label="Download All"
+          label="AI Export"
+          exportTitle={`${currentChild?.fullName ?? "Child"} Report`}
+          fileName={`parent-portal-${currentChild?.fullName ?? "child"}-export`}
         />
       </div>
 
@@ -238,14 +238,15 @@ export default function ParentDashboard() {
               <TabsTrigger value="courses">Courses</TabsTrigger>
               <TabsTrigger value="announcements">Notices</TabsTrigger>
             </TabsList>
-            <ExportButton
-              data={[
+            <AIDataExport
+              contextData={[
                 ...attendance ? attendance.recent.map((a) => ({ Type: "Attendance", Date: a.date, Status: a.status })) : [],
                 ...marks.map((m, i) => ({ Type: "Marks", Index: i + 1, "Total Marks": m.total_marks ?? "", Status: m.status, Remarks: m.remarks ?? "" })),
                 ...certs.map((c) => ({ Type: "Certificate", Serial: c.serial_number, "Issued At": c.issued_at, Template: c.template })),
               ]}
+              label="AI Export"
+              exportTitle={`${currentChild?.fullName ?? "Child"} Full Report`}
               fileName={`child-report-${currentChild?.fullName ?? "child"}`}
-              sheetName="Child Report"
             />
           </div>
 
@@ -253,7 +254,7 @@ export default function ParentDashboard() {
           <TabsContent value="attendance" className="mt-4 space-y-4">
             <div className="flex justify-between items-center">
               <p className="text-xs text-muted-foreground">{attendance?.total ?? 0} records</p>
-              <ExportButton data={(attendance?.recent ?? []).map((a) => ({ Date: a.date, Status: a.status }))} fileName={`attendance-${currentChild?.fullName ?? "child"}`} sheetName="Attendance" />
+              <AIDataExport contextData={(attendance?.recent ?? []).map((a) => ({ Date: a.date, Status: a.status }))} label="Export Attendance" exportTitle="Attendance Records" fileName={`attendance-${currentChild?.fullName ?? "child"}`} />
             </div>
             {childDataLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
@@ -313,7 +314,7 @@ export default function ParentDashboard() {
           <TabsContent value="results" className="mt-4">
             <div className="flex justify-between items-center mb-3">
               <p className="text-xs text-muted-foreground">{marks.length} result{marks.length !== 1 ? "s" : ""}</p>
-              <ExportButton data={marks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} fileName={`results-${currentChild?.fullName ?? "child"}`} sheetName="Results" />
+              <AIDataExport contextData={marks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} label="Export Results" exportTitle="Results" fileName={`results-${currentChild?.fullName ?? "child"}`} />
             </div>
             {childDataLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
@@ -352,7 +353,7 @@ export default function ParentDashboard() {
           <TabsContent value="courses" className="mt-4">
             <div className="flex justify-between items-center mb-3">
               <p className="text-xs text-muted-foreground">{enrollments.length} enrollment{enrollments.length !== 1 ? "s" : ""}</p>
-              <ExportButton data={enrollments.map((e) => ({ Course: e.title, Status: e.status }))} fileName={`courses-${currentChild?.fullName ?? "child"}`} sheetName="Courses" />
+              <AIDataExport contextData={enrollments.map((e) => ({ Course: e.title, Status: e.status }))} label="Export Courses" exportTitle="Course Enrollments" fileName={`courses-${currentChild?.fullName ?? "child"}`} />
             </div>
             {childDataLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>

@@ -18,7 +18,7 @@ import {
   BarChart3, Star, GraduationCap, Download,
 } from "lucide-react";
 import { format } from "date-fns";
-import ExportButton from "@/components/ui/ExportButton";
+import AIDataExport from "@/components/ui/AIDataExport";
 
 export default function StudentDashboard() {
   const { institution } = useTenant();
@@ -88,7 +88,7 @@ export default function StudentDashboard() {
           </h1>
           <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
-        <ExportButton data={allExportData} fileName="student-portal-full-export" sheetName="Student Data" label="Download All" />
+        <AIDataExport contextData={allExportData} label="AI Export" exportTitle="Student Portal Data" fileName="student-portal-export" />
       </div>
 
       {/* Stat Cards */}
@@ -180,7 +180,7 @@ export default function StudentDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{publishedCourses.length} published course{publishedCourses.length !== 1 ? "s" : ""}</p>
             <div className="flex gap-2">
-              <ExportButton data={publishedCourses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status }))} fileName="my-courses" sheetName="Courses" />
+              <AIDataExport contextData={publishedCourses.map((c) => ({ Title: c.title, Description: c.description ?? "", Status: c.status }))} label="Export" exportTitle="My Courses" fileName="my-courses" />
               <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/courses")}>View All <ArrowRight className="h-3 w-3" /></Button>
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function StudentDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{activeAssignments.length} active</p>
             <div className="flex gap-2">
-              <ExportButton data={activeAssignments.map((a) => ({ Title: a.title, "Total Marks": a.total_marks, "Due Date": a.due_date ?? "", Status: a.status }))} fileName="active-assignments" sheetName="Assignments" />
+              <AIDataExport contextData={activeAssignments.map((a) => ({ Title: a.title, "Total Marks": a.total_marks, "Due Date": a.due_date ?? "", Status: a.status }))} label="Export" exportTitle="My Assignments" fileName="active-assignments" />
               <Button size="sm" variant="ghost" className="gap-1 text-xs h-8" onClick={() => go("/assignments")}>View All <ArrowRight className="h-3 w-3" /></Button>
             </div>
           </div>
@@ -255,7 +255,7 @@ export default function StudentDashboard() {
         <TabsContent value="quizzes" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{publishedQuizzes.length} quiz{publishedQuizzes.length !== 1 ? "zes" : ""} available</p>
-            <ExportButton data={publishedQuizzes.map((q) => ({ Title: q.title, "Total Marks": q.total_marks, "Duration (min)": q.duration_minutes, "Max Attempts": q.max_attempts }))} fileName="available-quizzes" sheetName="Quizzes" />
+            <AIDataExport contextData={publishedQuizzes.map((q) => ({ Title: q.title, "Total Marks": q.total_marks, "Duration (min)": q.duration_minutes, "Max Attempts": q.max_attempts }))} label="Export" exportTitle="Available Quizzes" fileName="available-quizzes" />
           </div>
           {publishedQuizzes.length === 0 ? (
             <EmptyState icon={HelpCircle} message="No quizzes available" />
@@ -287,7 +287,7 @@ export default function StudentDashboard() {
         <TabsContent value="results" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{myMarks.length} result{myMarks.length !== 1 ? "s" : ""}</p>
-            <ExportButton data={myMarks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Theory: m.theory_marks ?? "", Practical: m.practical_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} fileName="my-results" sheetName="Results" />
+            <AIDataExport contextData={myMarks.map((m, i) => ({ "#": i + 1, Score: m.total_marks ?? "", Theory: m.theory_marks ?? "", Practical: m.practical_marks ?? "", Result: (m.total_marks ?? 0) >= 50 ? "Pass" : "Fail", Remarks: m.remarks ?? "" }))} label="Export" exportTitle="My Results" fileName="my-results" />
           </div>
           {myMarks.length === 0 ? (
             <EmptyState icon={BarChart3} message="No results published yet" />
@@ -326,7 +326,7 @@ export default function StudentDashboard() {
         <TabsContent value="attendance" className="mt-4">
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{attendance.length} record{attendance.length !== 1 ? "s" : ""}</p>
-            <ExportButton data={attendance.map((a) => ({ Date: a.date, Status: a.status }))} fileName="my-attendance" sheetName="Attendance" />
+            <AIDataExport contextData={attendance.map((a) => ({ Date: a.date, Status: a.status }))} label="Export" exportTitle="My Attendance" fileName="my-attendance" />
           </div>
           {/* Summary */}
           <div className="grid grid-cols-3 gap-3 mb-4">

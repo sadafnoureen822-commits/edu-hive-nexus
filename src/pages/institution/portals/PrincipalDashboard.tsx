@@ -19,7 +19,7 @@ import {
   PenSquare, AlertCircle,
 } from "lucide-react";
 import { format } from "date-fns";
-import ExportButton from "@/components/ui/ExportButton";
+import AIDataExport from "@/components/ui/AIDataExport";
 
 export default function PrincipalDashboard() {
   const { institution } = useTenant();
@@ -103,7 +103,7 @@ export default function PrincipalDashboard() {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <ExportButton data={allExportData} fileName="principal-portal-full-export" sheetName="Principal Data" label="Download All" />
+          <AIDataExport contextData={allExportData} label="AI Export" exportTitle="Principal Portal Data" fileName="principal-portal-export" />
           <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => go("/exams")}>
             <PenSquare className="h-3.5 w-3.5" /> Exams
           </Button>
@@ -188,7 +188,7 @@ export default function PrincipalDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{teachers.length} teacher{teachers.length !== 1 ? "s" : ""}</p>
             <div className="flex gap-2">
-              <ExportButton data={teacherSummary.map((t) => ({ Name: t.full_name ?? "", Courses: t.courseCount, Assignments: t.assignmentCount, Joined: t.created_at }))} fileName="teaching-staff" sheetName="Teachers" />
+              <AIDataExport contextData={teacherSummary.map((t) => ({ Name: t.full_name ?? "", Courses: t.courseCount, Assignments: t.assignmentCount, Joined: t.created_at }))} label="Export" exportTitle="Teaching Staff" fileName="teaching-staff" />
               <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/users")}>
                 Manage Staff <ArrowRight className="h-3 w-3" />
               </Button>
@@ -230,7 +230,7 @@ export default function PrincipalDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{students.length} student{students.length !== 1 ? "s" : ""} · ranked by avg score</p>
             <div className="flex gap-2">
-              <ExportButton data={studentSummary.map((s, i) => ({ Rank: i + 1, Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount }))} fileName="student-results-ranking" sheetName="Students" />
+              <AIDataExport contextData={studentSummary.map((s, i) => ({ Rank: i + 1, Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount }))} label="Export" exportTitle="Student Rankings" fileName="student-results-ranking" />
               <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/marks")}>
                 Full Results <ArrowRight className="h-3 w-3" />
               </Button>
@@ -276,7 +276,7 @@ export default function PrincipalDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{exams.length} exam{exams.length !== 1 ? "s" : ""} total</p>
             <div className="flex gap-2">
-              <ExportButton data={exams.map((e) => ({ Name: e.name, Type: e.exam_type, Status: e.status, "Start Date": e.start_date ?? "", "End Date": e.end_date ?? "" }))} fileName="exams" sheetName="Exams" />
+              <AIDataExport contextData={exams.map((e) => ({ Name: e.name, Type: e.exam_type, Status: e.status, "Start Date": e.start_date ?? "", "End Date": e.end_date ?? "" }))} label="Export" exportTitle="Exams" fileName="exams" />
               <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/exams")}>
                 Manage Exams <ArrowRight className="h-3 w-3" />
               </Button>
