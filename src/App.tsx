@@ -51,6 +51,7 @@ import PublicSite from "./pages/public/PublicSite";
 import ResetPassword from "./pages/ResetPassword";
 import MarksResultsPage from "./pages/institution/MarksResultsPage";
 import CertificateVerification from "./pages/public/CertificateVerification";
+import PortalLogin from "./pages/PortalLogin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +75,8 @@ function App() {
             {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            {/* Role-specific portal login — /:portal/login where portal = super-admin | admin | teacher | student | parent */}
+            <Route path="/:portal/login" element={<PortalLogin />} />
 
             {/* Admin routes (platform admin) */}
             <Route

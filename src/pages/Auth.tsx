@@ -13,50 +13,50 @@ type PortalKey = "superadmin" | "admin" | "teacher" | "student" | "parent" | nul
 const PORTAL_CARDS = [
   {
     key: "superadmin" as PortalKey,
+    urlSlug: "super-admin",
     label: "Super Admin",
     sub: "Platform control",
     Icon: Shield,
-    color: "from-blue-600 to-blue-700",
     lightBg: "bg-blue-50 border-blue-200",
     iconColor: "text-blue-600",
     iconBg: "bg-blue-100",
   },
   {
     key: "admin" as PortalKey,
+    urlSlug: "admin",
     label: "Institution Admin",
     sub: "Manage school",
     Icon: School,
-    color: "from-emerald-600 to-emerald-700",
     lightBg: "bg-emerald-50 border-emerald-200",
     iconColor: "text-emerald-600",
     iconBg: "bg-emerald-100",
   },
   {
     key: "teacher" as PortalKey,
+    urlSlug: "teacher",
     label: "Teacher",
     sub: "Classroom portal",
     Icon: GraduationCap,
-    color: "from-violet-600 to-violet-700",
     lightBg: "bg-violet-50 border-violet-200",
     iconColor: "text-violet-600",
     iconBg: "bg-violet-100",
   },
   {
     key: "student" as PortalKey,
+    urlSlug: "student",
     label: "Student",
     sub: "Learning portal",
     Icon: User,
-    color: "from-orange-500 to-orange-600",
     lightBg: "bg-orange-50 border-orange-200",
     iconColor: "text-orange-500",
     iconBg: "bg-orange-100",
   },
   {
     key: "parent" as PortalKey,
+    urlSlug: "parent",
     label: "Parent",
     sub: "Child progress",
     Icon: Users,
-    color: "from-rose-500 to-rose-600",
     lightBg: "bg-rose-50 border-rose-200",
     iconColor: "text-rose-500",
     iconBg: "bg-rose-100",
@@ -220,11 +220,11 @@ export default function Auth() {
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            {PORTAL_CARDS.map(({ key, label, sub, Icon, lightBg, iconColor, iconBg }) => (
+            {PORTAL_CARDS.map(({ urlSlug, label, sub, Icon, lightBg, iconColor, iconBg }) => (
               <button
-                key={key}
+                key={urlSlug}
                 type="button"
-                onClick={() => setSelectedPortal(key)}
+                onClick={() => navigate(`/${urlSlug}/login`)}
                 className={`flex items-center gap-4 p-4 rounded-2xl border-2 ${lightBg} text-left transition-all duration-150 hover:scale-[1.01] hover:shadow-md active:scale-[0.99] group`}
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
