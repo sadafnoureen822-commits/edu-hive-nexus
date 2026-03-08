@@ -61,6 +61,16 @@ const PORTAL_CARDS = [
     iconColor: "text-rose-500",
     iconBg: "bg-rose-100",
   },
+  {
+    key: "principal" as PortalKey,
+    urlSlug: "principal",
+    label: "Principal",
+    sub: "School oversight",
+    Icon: ShieldCheck,
+    lightBg: "bg-teal-50 border-teal-200",
+    iconColor: "text-teal-600",
+    iconBg: "bg-teal-100",
+  },
 ];
 
 export default function Auth() {
