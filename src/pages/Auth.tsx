@@ -6,7 +6,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, School, GraduationCap } from "lucide-react";
+
+const ROLE_CARDS = [
+  {
+    key: "superadmin",
+    label: "Super Admin",
+    sub: "Platform control",
+    Icon: Shield,
+    accent: "hover:border-primary hover:bg-primary/5 hover:shadow-md",
+    iconColor: "text-primary",
+    iconBg: "bg-primary/10",
+  },
+  {
+    key: "admin",
+    label: "Institution Admin",
+    sub: "Manage school",
+    Icon: School,
+    accent: "hover:border-chart-2 hover:bg-chart-2/5 hover:shadow-md",
+    iconColor: "text-chart-2",
+    iconBg: "bg-chart-2/10",
+  },
+  {
+    key: "role",
+    label: "Teacher / Student",
+    sub: "Role portal",
+    Icon: GraduationCap,
+    accent: "hover:border-chart-3 hover:bg-chart-3/5 hover:shadow-md",
+    iconColor: "text-chart-3",
+    iconBg: "bg-chart-3/10",
+  },
+];
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -19,50 +49,8 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Handle role card click: navigate if logged in, else prompt sign-in
-  const handleRoleClick = async (roleKey: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-      toast({ title: "Sign in first", description: "Enter your credentials above and click Sign In." });
-      return;
-    }
-
-    const userId = session.user.id;
-
-    if (roleKey === "superadmin") {
-      navigate("/admin");
-      return;
-    }
-
-    // For institution roles, find their membership
-    const { data: memberships } = await supabase
-      .from("institution_members")
-      .select("role, institutions!institution_id(slug)")
-      .eq("user_id", userId)
-      .limit(1);
-
-    if (!memberships?.length) {
-      toast({ title: "No institution found", description: "You are not a member of any institution.", variant: "destructive" });
-      return;
-    }
-
-    const m = memberships[0] as any;
-    const slug = m.institutions?.slug;
-    const role = m.role;
-
-    if (!slug) return;
-
-    if (roleKey === "admin") navigate(`/${slug}`);
-    else if (roleKey === "teacher") navigate(`/${slug}/teacher`);
-    else if (roleKey === "student") navigate(`/${slug}/student`);
-    else if (roleKey === "parent") navigate(`/${slug}/parent`);
-    else navigate(`/${slug}`);
-  };
-
-  // After login: detect role and redirect accordingly
+  // Navigate to the correct portal after login based on role
   const handlePostLogin = async (userId: string) => {
-    // Check if platform admin
     const { data: platformRole } = await supabase
       .from("platform_roles")
       .select("role")
@@ -74,7 +62,6 @@ export default function Auth() {
       return;
     }
 
-    // Check institution membership
     const { data: memberships } = await supabase
       .from("institution_members")
       .select("institution_id, role, institutions!institution_id(slug)")
@@ -85,18 +72,64 @@ export default function Auth() {
       const m = memberships[0] as any;
       const slug = m.institutions?.slug;
       const role = m.role;
-
       if (slug) {
         if (role === "student") navigate(`/${slug}/student`);
         else if (role === "teacher") navigate(`/${slug}/teacher`);
         else if (role === "parent") navigate(`/${slug}/parent`);
-        else navigate(`/${slug}`); // admin / staff
+        else navigate(`/${slug}`);
         return;
       }
     }
 
-    // Fallback: go to admin (they'll see "no institution" message)
     navigate("/admin");
+  };
+
+  // Role card click: navigate if already signed in, else prompt
+  const handleRoleClick = async (roleKey: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      toast({
+        title: "Sign in first",
+        description: "Enter your email & password above, then click Sign In.",
+      });
+      return;
+    }
+
+    const userId = session.user.id;
+
+    if (roleKey === "superadmin") {
+      navigate("/admin");
+      return;
+    }
+
+    const { data: memberships } = await supabase
+      .from("institution_members")
+      .select("role, institutions!institution_id(slug)")
+      .eq("user_id", userId)
+      .limit(1);
+
+    if (!memberships?.length) {
+      toast({
+        title: "No institution found",
+        description: "You are not a member of any institution.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const m = memberships[0] as any;
+    const slug = m.institutions?.slug;
+    const role = m.role;
+    if (!slug) return;
+
+    if (roleKey === "admin") navigate(`/${slug}`);
+    else if (roleKey === "role") {
+      // Navigate based on actual role
+      if (role === "teacher") navigate(`/${slug}/teacher`);
+      else if (role === "parent") navigate(`/${slug}/parent`);
+      else navigate(`/${slug}/student`);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,7 +143,7 @@ export default function Auth() {
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
-        toast({ title: "Email sent!", description: "Check your inbox for the password reset link." });
+        toast({ title: "Email sent!", description: "Check your inbox for the reset link." });
         setForgotMode(false);
       }
       setLoading(false);
@@ -153,21 +186,24 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="flex items-center justify-center gap-2">
+    <div className="min-h-screen bg-secondary/30 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-5">
+
+        {/* Brand */}
+        <div className="flex items-center justify-center gap-2.5">
           <div className="feature-icon">
-            <Building2 className="w-6 h-6" />
+            <Building2 className="w-5 h-5" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-foreground">EduCloud Platform</h1>
+          <h1 className="text-xl font-display font-bold text-foreground">EduCloud Platform</h1>
         </div>
 
-        <Card className="border-border/50 shadow-lg">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="font-display">
+        {/* Login Card */}
+        <Card className="border-border/60 shadow-lg bg-card">
+          <CardHeader className="text-center pb-5 pt-6">
+            <CardTitle className="text-2xl font-display font-bold">
               {forgotMode ? "Reset Password" : isLogin ? "Welcome Back" : "Create Account"}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm mt-1">
               {forgotMode
                 ? "Enter your email to receive a reset link"
                 : isLogin
@@ -175,10 +211,10 @@ export default function Auth() {
                 : "Register to get started with the platform"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-6 pb-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && !forgotMode && (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="fullName">Full Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -195,7 +231,7 @@ export default function Auth() {
                 </div>
               )}
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -207,19 +243,20 @@ export default function Auth() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
                     required
+                    autoComplete="email"
                   />
                 </div>
               </div>
 
               {!forgotMode && (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
                     {isLogin && (
                       <button
                         type="button"
                         onClick={() => setForgotMode(true)}
-                        className="text-xs text-primary hover:underline"
+                        className="text-xs text-primary hover:underline font-medium"
                       >
                         Forgot password?
                       </button>
@@ -236,11 +273,12 @@ export default function Auth() {
                       className="pl-10 pr-10"
                       required
                       minLength={6}
+                      autoComplete={isLogin ? "current-password" : "new-password"}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -248,7 +286,11 @@ export default function Auth() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full h-11 text-sm font-semibold"
+                disabled={loading}
+              >
                 {loading
                   ? "Please wait..."
                   : forgotMode
@@ -259,14 +301,14 @@ export default function Auth() {
               </Button>
             </form>
 
-            <div className="mt-4 text-center space-y-2">
+            <div className="mt-4 text-center">
               {forgotMode ? (
                 <button
                   type="button"
                   onClick={() => setForgotMode(false)}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary hover:underline font-medium"
                 >
-                  Back to sign in
+                  ← Back to sign in
                 </button>
               ) : (
                 <button
@@ -274,55 +316,37 @@ export default function Auth() {
                   onClick={() => setIsLogin(!isLogin)}
                   className="text-sm text-primary hover:underline"
                 >
-                  {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                  {isLogin
+                    ? "Don't have an account? Sign up"
+                    : "Already have an account? Sign in"}
                 </button>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Role access cards */}
-        <div className="space-y-2">
-          <p className="text-center text-xs text-muted-foreground">Sign in as</p>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              {
-                role: "Super Admin", hint: "Platform control", icon: "🛡️", key: "superadmin",
-                color: "hover:border-destructive/50 hover:bg-destructive/5",
-              },
-              {
-                role: "Institution Admin", hint: "Manage school", icon: "🏫", key: "admin",
-                color: "hover:border-primary/50 hover:bg-primary/5",
-              },
-              {
-                role: "Teacher", hint: "Courses & attendance", icon: "📚", key: "teacher",
-                color: "hover:border-chart-2/50 hover:bg-chart-2/5",
-              },
-              {
-                role: "Student", hint: "Learning portal", icon: "🎓", key: "student",
-                color: "hover:border-chart-3/50 hover:bg-chart-3/5",
-              },
-              {
-                role: "Parent", hint: "Child progress", icon: "👨‍👩‍👧", key: "parent",
-                color: "hover:border-chart-4/50 hover:bg-chart-4/5",
-              },
-            ].map((r) => (
-              <button
-                key={r.role}
-                type="button"
-                onClick={() => handleRoleClick(r.key)}
-                className={`p-3 rounded-xl border border-border/50 bg-card text-left transition-all cursor-pointer ${r.color}`}
-              >
-                <p className="text-lg">{r.icon}</p>
-                <p className="text-xs font-semibold text-foreground mt-1">{r.role}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{r.hint}</p>
-              </button>
-            ))}
-          </div>
-          <p className="text-center text-[10px] text-muted-foreground">
-            Sign in first, then tap your role to go to your portal.
-          </p>
+        {/* Role Portal Cards */}
+        <div className="grid grid-cols-3 gap-3">
+          {ROLE_CARDS.map(({ key, label, sub, Icon, accent, iconColor, iconBg }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handleRoleClick(key)}
+              className={`group flex flex-col items-center gap-2 p-4 rounded-2xl border border-border/50 bg-card text-center transition-all duration-200 cursor-pointer ${accent}`}
+            >
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg} transition-colors`}>
+                <Icon className={`h-4 w-4 ${iconColor}`} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-foreground leading-tight">{label}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>
+              </div>
+            </button>
+          ))}
         </div>
+        <p className="text-center text-[10px] text-muted-foreground -mt-2">
+          Sign in first · then tap your role to go to your portal
+        </p>
       </div>
     </div>
   );
