@@ -846,6 +846,41 @@ export default function RoleAssignmentPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── Remove All Confirm ────────────────────────────────────────────── */}
+      <AlertDialog open={removeAllOpen} onOpenChange={(o) => { if (!o) setRemoveAllOpen(false); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              Remove All Users?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                This will permanently remove <strong>all {members.length} institution membership(s)</strong> from the platform.
+              </span>
+              <span className="block font-medium text-foreground">
+                ✓ Super Admin accounts will NOT be affected.
+              </span>
+              <span className="block text-destructive">
+                All teachers, students, parents, principals and admins will lose portal access immediately. This cannot be undone.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removeAllLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={handleRemoveAll}
+              disabled={removeAllLoading}
+            >
+              {removeAllLoading ? (
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" />Removing…</>
+              ) : "Yes, Remove All"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
