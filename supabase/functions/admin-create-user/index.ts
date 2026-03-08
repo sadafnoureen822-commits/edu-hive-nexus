@@ -86,33 +86,18 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Search for user across pages
-      let foundUser = null;
-      let page = 1;
-      while (!foundUser) {
-        const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
-          page,
-          perPage: 1000,
-        });
+      // Look up the existing user's ID via DB function (bypasses listUsers pagination issues)
+      const { data: existingUserId, error: lookupError } = await supabaseAdmin
+        .rpc("get_user_id_by_email", { p_email: normalizedEmail });
 
-        if (listError || !listData?.users?.length) break;
-
-        foundUser = listData.users.find(
-          (u) => u.email?.toLowerCase() === normalizedEmail
-        );
-
-        if (listData.users.length < 1000) break; // last page
-        page++;
-      }
-
-      if (!foundUser) {
+      if (lookupError || !existingUserId) {
         return new Response(
-          JSON.stringify({ error: `User exists but could not be found. Please try assigning the role manually.` }),
+          JSON.stringify({ error: "User already exists but could not be located. Please assign the role manually." }),
           { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      userId = foundUser.id;
+      userId = existingUserId;
       alreadyExisted = true;
     } else {
       userId = newUserData.user!.id;
