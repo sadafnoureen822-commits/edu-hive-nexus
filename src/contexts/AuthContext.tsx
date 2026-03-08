@@ -25,50 +25,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
-  // Prevent duplicate platform_roles queries when both getSession + onAuthStateChange fire
+  // Track which userId we've already checked to avoid duplicate DB hits
   const adminChecked = useRef<string | null>(null);
 
-  const checkPlatformAdmin = async (userId: string) => {
+  // Fire-and-forget — never await inside onAuthStateChange
+  const checkPlatformAdmin = (userId: string) => {
     if (adminChecked.current === userId) return;
     adminChecked.current = userId;
-    const { data } = await supabase
+    supabase
       .from("platform_roles")
       .select("role")
       .eq("user_id", userId)
-      .maybeSingle();
-    setIsPlatformAdmin(data?.role === "platform_admin");
+      .maybeSingle()
+      .then(({ data }) => {
+        setIsPlatformAdmin(data?.role === "platform_admin");
+      });
   };
 
   useEffect(() => {
-    // Set up listener FIRST before getSession to avoid race conditions
+    // 1. Restore session from storage immediately — sets loading=false right away
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        checkPlatformAdmin(session.user.id);
+      }
+      setLoading(false);
+    });
+
+    // 2. Listen for subsequent sign-in / sign-out events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          await checkPlatformAdmin(session.user.id);
+          // fire-and-forget — no await here
+          checkPlatformAdmin(session.user.id);
         } else {
           adminChecked.current = null;
           setIsPlatformAdmin(false);
         }
+        // Only clear loading if it's still true (prevents double-set)
         setLoading(false);
       }
     );
-
-    // Get initial session (onAuthStateChange will also fire for this, ref prevents double query)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        setLoading(false);
-      }
-    });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
     adminChecked.current = null;
-    await supabase.auth.signOut();
     setIsPlatformAdmin(false);
+    await supabase.auth.signOut();
   };
 
   return (
