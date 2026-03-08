@@ -2714,6 +2714,7 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           created_at: string
+          exam_id: string | null
           exam_subject_id: string
           grace_marks_applied: number | null
           id: string
@@ -2730,6 +2731,7 @@ export type Database = {
           submitted_by: string | null
           theory_marks: number | null
           total_marks: number | null
+          total_obtained: number | null
           updated_at: string
           viva_marks: number | null
         }
@@ -2737,6 +2739,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
+          exam_id?: string | null
           exam_subject_id: string
           grace_marks_applied?: number | null
           id?: string
@@ -2753,6 +2756,7 @@ export type Database = {
           submitted_by?: string | null
           theory_marks?: number | null
           total_marks?: number | null
+          total_obtained?: number | null
           updated_at?: string
           viva_marks?: number | null
         }
@@ -2760,6 +2764,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
+          exam_id?: string | null
           exam_subject_id?: string
           grace_marks_applied?: number | null
           id?: string
@@ -2776,10 +2781,18 @@ export type Database = {
           submitted_by?: string | null
           theory_marks?: number | null
           total_marks?: number | null
+          total_obtained?: number | null
           updated_at?: string
           viva_marks?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "student_marks_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "student_marks_exam_subject_id_fkey"
             columns: ["exam_subject_id"]
