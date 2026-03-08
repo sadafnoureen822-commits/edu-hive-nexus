@@ -12,10 +12,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import {
   Building2, Mail, Lock, User, Eye, EyeOff, Shield, School,
-  GraduationCap, Users, ArrowLeft, AlertCircle, CheckCircle2, Info,
+  GraduationCap, Users, ArrowLeft, AlertCircle, CheckCircle2, Info, ShieldCheck,
 } from "lucide-react";
 
-type PortalSlug = "super-admin" | "admin" | "teacher" | "student" | "parent";
+type PortalSlug = "super-admin" | "admin" | "teacher" | "student" | "parent" | "principal";
 type Mode = "login" | "signup" | "forgot";
 
 const PORTAL_META: Record<PortalSlug, {
@@ -63,6 +63,14 @@ const PORTAL_META: Record<PortalSlug, {
     dbRoles: ["parent"],
     allowSignup: true,
     signupNote: "After signing up, your Institution Admin must link your account to your child.",
+  },
+  principal: {
+    label: "Principal", sub: "School oversight",
+    Icon: ShieldCheck,
+    lightBg: "bg-teal-50 border-teal-200", iconColor: "text-teal-600", iconBg: "bg-teal-100",
+    dbRoles: ["principal"],
+    allowSignup: true,
+    signupNote: "After signing up, a Super Admin must assign you as Principal of an institution.",
   },
 };
 
@@ -215,7 +223,8 @@ export default function PortalLogin() {
       await supabase.auth.signOut();
       const actualRole = memberships[0].role;
       const portalForRole: Record<string, string> = {
-        admin: "/admin/login", principal: "/admin/login", exam_controller: "/admin/login",
+        admin: "/admin/login", exam_controller: "/admin/login",
+        principal: "/principal/login",
         teacher: "/teacher/login", student: "/student/login", parent: "/parent/login",
       };
       toast({
@@ -247,6 +256,7 @@ export default function PortalLogin() {
     if (match.role === "student") navigate(`/${slug}/student`, { replace: true });
     else if (match.role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
     else if (match.role === "parent") navigate(`/${slug}/parent`, { replace: true });
+    else if (match.role === "principal") navigate(`/${slug}/principal`, { replace: true });
     else navigate(`/${slug}`, { replace: true });
   };
 

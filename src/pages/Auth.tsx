@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, School, GraduationCap, Users, ArrowLeft, ChevronRight } from "lucide-react";
+import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, School, GraduationCap, Users, ArrowLeft, ChevronRight, ShieldCheck } from "lucide-react";
 
-type PortalKey = "superadmin" | "admin" | "teacher" | "student" | "parent" | null;
+type PortalKey = "superadmin" | "admin" | "teacher" | "student" | "parent" | "principal" | null;
 
 const PORTAL_CARDS = [
   {
@@ -60,6 +60,16 @@ const PORTAL_CARDS = [
     lightBg: "bg-rose-50 border-rose-200",
     iconColor: "text-rose-500",
     iconBg: "bg-rose-100",
+  },
+  {
+    key: "principal" as PortalKey,
+    urlSlug: "principal",
+    label: "Principal",
+    sub: "School oversight",
+    Icon: ShieldCheck,
+    lightBg: "bg-teal-50 border-teal-200",
+    iconColor: "text-teal-600",
+    iconBg: "bg-teal-100",
   },
 ];
 
@@ -138,6 +148,7 @@ export default function Auth() {
     if (role === "student") navigate(`/${slug}/student`, { replace: true });
     else if (role === "teacher") navigate(`/${slug}/teacher`, { replace: true });
     else if (role === "parent") navigate(`/${slug}/parent`, { replace: true });
+    else if (role === "principal") navigate(`/${slug}/principal`, { replace: true });
     else navigate(`/${slug}`, { replace: true });
   };
 

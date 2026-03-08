@@ -39,6 +39,7 @@ import AttendancePage from "./pages/institution/AttendancePage";
 import StudentDashboard from "./pages/institution/portals/StudentDashboard";
 import TeacherDashboard from "./pages/institution/portals/TeacherDashboard";
 import ParentDashboard from "./pages/institution/portals/ParentDashboard";
+import PrincipalDashboard from "./pages/institution/portals/PrincipalDashboard";
 import TimetablePage from "./pages/institution/TimetablePage";
 import FeeManagement from "./pages/institution/FeeManagement";
 import AnnouncementsPage from "./pages/institution/AnnouncementsPage";
@@ -139,11 +140,12 @@ function App() {
               <Route path="notifications" element={<NotificationCenter />} />
               <Route path="activity-logs" element={<ActivityLogsPage />} />
               <Route path="api-keys" element={<ApiKeysPage />} />
-              {/* Role Portals */}
+      {/* Role Portals */}
               <Route path="student" element={<StudentDashboard />} />
               <Route path="teacher" element={<TeacherDashboard />} />
               <Route path="marks" element={<MarksResultsPage />} />
               <Route path="parent" element={<ParentDashboard />} />
+              <Route path="principal" element={<PrincipalDashboard />} />
             </Route>
 
             {/* Public site routes */}
