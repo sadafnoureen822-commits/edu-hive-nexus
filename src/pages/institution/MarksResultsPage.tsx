@@ -36,12 +36,12 @@ export default function MarksResultsPage() {
   const qc = useQueryClient();
   const institutionId = institution?.id ?? "";
 
-  const { exams, loading: examsLoading } = useExams(institutionId);
+  const { exams, loading: examsLoading } = useExams();
   const { data: students = [] } = useInstitutionMembers(institutionId, "student");
 
   const [selectedExam, setSelectedExam] = useState("");
   const [selectedSubjectId, setSelectedSubjectId] = useState("");
-  const { subjects: examSubjects, loading: esLoading } = useExamSubjects(institutionId, selectedExam);
+  const { examSubjects, loading: esLoading } = useExamSubjects(selectedExam);
 
   const [marks, setMarks] = useState<Record<string, Mark>>({});
   const [saving, setSaving] = useState(false);
