@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Plus, HelpCircle, Edit, Trash2, ChevronRight, CheckCircle2, Circle } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function QuizzesPage() {
   const { institution } = useTenant();

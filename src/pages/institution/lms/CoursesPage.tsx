@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Plus, BookOpen, Edit, Trash2, ChevronRight, Video, FileText, Clock } from "lucide-react";
 import { useForm } from "react-hook-form";
+import ExportButton from "@/components/ui/ExportButton";
 
 export default function CoursesPage() {
   const { institution } = useTenant();
