@@ -140,6 +140,18 @@ export default function ModuleControlPage() {
             Enable or disable platform modules for each institution
           </p>
         </div>
+        <AIDataExport
+          contextData={filtered.flatMap((inst) =>
+            ALL_MODULES.map((m) => ({
+              Institution: inst.name,
+              Module: MODULE_META[m].label,
+              Enabled: getEnabled(inst.id, m) ? "Yes" : "No",
+            }))
+          )}
+          label="AI Export"
+          exportTitle="Module Control Report"
+          fileName="module-control"
+        />
       </div>
 
       {/* Module Legend */}
