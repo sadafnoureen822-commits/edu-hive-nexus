@@ -326,10 +326,14 @@ export default function RoleAssignmentPage() {
     !userSearch || p.full_name?.toLowerCase().includes(userSearch.toLowerCase())
   );
 
-  const filteredUsers = profiles.filter((p) =>
-    !usersSearch || p.full_name?.toLowerCase().includes(usersSearch.toLowerCase()) ||
-    p.user_id.toLowerCase().includes(usersSearch.toLowerCase())
-  );
+  const filteredUsers = profiles.filter((p) => {
+    if (!usersSearch) return true;
+    const q = usersSearch.toLowerCase();
+    const email = emailMap[p.user_id] ?? "";
+    return p.full_name?.toLowerCase().includes(q) ||
+      p.user_id.toLowerCase().includes(q) ||
+      email.toLowerCase().includes(q);
+  });
 
   const counts = ALL_ROLES.reduce((acc, r) => {
     acc[r] = members.filter((m) => m.role === r).length;
