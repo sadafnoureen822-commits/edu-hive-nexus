@@ -620,7 +620,7 @@ export default function RoleAssignmentPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name or user ID…"
+                  placeholder="Search by name, email or user ID…"
                   value={usersSearch}
                   onChange={(e) => setUsersSearch(e.target.value)}
                   className="pl-9"
