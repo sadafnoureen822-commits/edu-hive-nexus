@@ -1800,6 +1800,41 @@ export type Database = {
           },
         ]
       }
+      institution_modules: {
+        Row: {
+          id: string
+          institution_id: string
+          is_enabled: boolean
+          module_name: string
+          settings: Json | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          institution_id: string
+          is_enabled?: boolean
+          module_name: string
+          settings?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          institution_id?: string
+          is_enabled?: boolean
+          module_name?: string
+          settings?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "institution_modules_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       institution_subscriptions: {
         Row: {
           billing_cycle: string
