@@ -19,6 +19,47 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Handle role card click: navigate if logged in, else prompt sign-in
+  const handleRoleClick = async (roleKey: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      toast({ title: "Sign in first", description: "Enter your credentials above and click Sign In." });
+      return;
+    }
+
+    const userId = session.user.id;
+
+    if (roleKey === "superadmin") {
+      navigate("/admin");
+      return;
+    }
+
+    // For institution roles, find their membership
+    const { data: memberships } = await supabase
+      .from("institution_members")
+      .select("role, institutions!institution_id(slug)")
+      .eq("user_id", userId)
+      .limit(1);
+
+    if (!memberships?.length) {
+      toast({ title: "No institution found", description: "You are not a member of any institution.", variant: "destructive" });
+      return;
+    }
+
+    const m = memberships[0] as any;
+    const slug = m.institutions?.slug;
+    const role = m.role;
+
+    if (!slug) return;
+
+    if (roleKey === "admin") navigate(`/${slug}`);
+    else if (roleKey === "teacher") navigate(`/${slug}/teacher`);
+    else if (roleKey === "student") navigate(`/${slug}/student`);
+    else if (roleKey === "parent") navigate(`/${slug}/parent`);
+    else navigate(`/${slug}`);
+  };
+
   // After login: detect role and redirect accordingly
   const handlePostLogin = async (userId: string) => {
     // Check if platform admin
@@ -246,52 +287,30 @@ export default function Auth() {
           <div className="grid grid-cols-2 gap-2">
             {[
               {
-                role: "Super Admin",
-                hint: "Platform control",
-                icon: "🛡️",
-                description: "Full platform access. Manage all institutions, revenue & subscription plans. After login → redirected to /admin.",
+                role: "Super Admin", hint: "Platform control", icon: "🛡️", key: "superadmin",
                 color: "hover:border-destructive/50 hover:bg-destructive/5",
               },
               {
-                role: "Institution Admin",
-                hint: "Manage school",
-                icon: "🏫",
-                description: "Manage your school: students, teachers, exams, fees, LMS & more. After login → redirected to your school dashboard.",
+                role: "Institution Admin", hint: "Manage school", icon: "🏫", key: "admin",
                 color: "hover:border-primary/50 hover:bg-primary/5",
               },
               {
-                role: "Teacher",
-                hint: "Courses & attendance",
-                icon: "📚",
-                description: "Access your teaching portal: courses, assignments, quizzes, attendance marking & student marks.",
+                role: "Teacher", hint: "Courses & attendance", icon: "📚", key: "teacher",
                 color: "hover:border-chart-2/50 hover:bg-chart-2/5",
               },
               {
-                role: "Student",
-                hint: "Learning portal",
-                icon: "🎓",
-                description: "Access your learning portal: courses, quizzes, results, attendance records & certificates.",
+                role: "Student", hint: "Learning portal", icon: "🎓", key: "student",
                 color: "hover:border-chart-3/50 hover:bg-chart-3/5",
               },
               {
-                role: "Parent",
-                hint: "Child progress",
-                icon: "👨‍👩‍👧",
-                description: "Monitor your child's attendance, exam results, course enrollments & school announcements.",
+                role: "Parent", hint: "Child progress", icon: "👨‍👩‍👧", key: "parent",
                 color: "hover:border-chart-4/50 hover:bg-chart-4/5",
               },
             ].map((r) => (
               <button
                 key={r.role}
                 type="button"
-                onClick={() => {
-                  setIsLogin(true);
-                  setForgotMode(false);
-                  toast({
-                    title: `${r.icon} ${r.role}`,
-                    description: r.description,
-                  });
-                }}
+                onClick={() => handleRoleClick(r.key)}
                 className={`p-3 rounded-xl border border-border/50 bg-card text-left transition-all cursor-pointer ${r.color}`}
               >
                 <p className="text-lg">{r.icon}</p>
@@ -301,7 +320,7 @@ export default function Auth() {
             ))}
           </div>
           <p className="text-center text-[10px] text-muted-foreground">
-            Tap a role to see what it can access, then sign in with your credentials.
+            Sign in first, then tap your role to go to your portal.
           </p>
         </div>
       </div>
