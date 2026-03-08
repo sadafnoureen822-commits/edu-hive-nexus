@@ -282,7 +282,7 @@ export default function PrincipalDashboard() {
                     <Badge
                       variant="outline"
                       className={`text-[10px] flex-shrink-0 ${
-                        e.status === "published" || e.status === "ongoing"
+                        e.status === "active" || e.status === "scheduled"
                           ? "text-green-600 border-green-500/30"
                           : e.status === "completed"
                           ? "text-muted-foreground"
