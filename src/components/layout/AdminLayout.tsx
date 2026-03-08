@@ -74,7 +74,7 @@ export default function AdminLayout() {
           <Button
             variant="ghost"
             className="w-full justify-start gap-2 text-muted-foreground"
-            onClick={signOut}
+            onClick={handleSignOut}
           >
             <LogOut className="h-4 w-4" />
             Sign Out
