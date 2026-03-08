@@ -91,6 +91,15 @@ export default function TeacherDashboard() {
     { label: "Students", value: students.length, icon: Users, color: "text-accent", bg: "bg-accent/10" },
   ];
 
+  // Bulk export data
+  const allExportData = [
+    ...myCourses.map((c) => ({ Section: "Courses", Title: c.title, Description: c.description ?? "", Status: c.status, Created: c.created_at })),
+    ...myAssignments.map((a) => ({ Section: "Assignments", Title: a.title, "Total Marks": a.total_marks, "Passing Marks": a.passing_marks, Status: a.status, "Due Date": a.due_date ?? "" })),
+    ...myQuizzes.map((q) => ({ Section: "Quizzes", Title: q.title, Description: q.description ?? "", Status: q.status, "Total Marks": q.total_marks, "Duration (min)": q.duration_minutes })),
+    ...studentProgress.map((s) => ({ Section: "Students", Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount, Joined: s.created_at })),
+    ...existingAtt.map((a) => ({ Section: "Attendance", Date: attDate, "Student ID": a.student_id, Status: a.status })),
+  ];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -107,6 +116,7 @@ export default function TeacherDashboard() {
           </h1>
           <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
+        <ExportButton data={allExportData} fileName="teacher-portal-full-export" sheetName="Teacher Data" label="Download All" />
       </div>
 
       {/* Stats */}
