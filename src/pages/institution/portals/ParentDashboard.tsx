@@ -134,16 +134,16 @@ export default function ParentDashboard() {
           </h1>
           <p className="text-sm text-muted-foreground">{institution?.name} · {format(new Date(), "EEEE, dd MMM yyyy")}</p>
         </div>
-        <ExportButton
-          data={[
+        <AIDataExport
+          contextData={[
             ...(attendance?.recent ?? []).map((a) => ({ Section: "Attendance", Date: a.date, Status: a.status })),
             ...marks.map((m, i) => ({ Section: "Results", "#": i + 1, Score: m.total_marks ?? "", Status: m.status, Remarks: m.remarks ?? "" })),
             ...enrollments.map((e) => ({ Section: "Courses", Title: e.title, Status: e.status })),
             ...certs.map((c) => ({ Section: "Certificates", Serial: c.serial_number, "Issued At": c.issued_at, Template: c.template })),
           ]}
-          fileName={`parent-portal-${currentChild?.fullName ?? "child"}-full-export`}
-          sheetName="Child Report"
-          label="Download All"
+          label="AI Export"
+          exportTitle={`${currentChild?.fullName ?? "Child"} Report`}
+          fileName={`parent-portal-${currentChild?.fullName ?? "child"}-export`}
         />
       </div>
 

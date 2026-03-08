@@ -103,7 +103,7 @@ export default function PrincipalDashboard() {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <ExportButton data={allExportData} fileName="principal-portal-full-export" sheetName="Principal Data" label="Download All" />
+          <AIDataExport contextData={allExportData} label="AI Export" exportTitle="Principal Portal Data" fileName="principal-portal-export" />
           <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => go("/exams")}>
             <PenSquare className="h-3.5 w-3.5" /> Exams
           </Button>
