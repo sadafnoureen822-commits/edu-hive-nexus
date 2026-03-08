@@ -267,7 +267,8 @@ export default function ExamManagement() {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Exam detail dialog */}
