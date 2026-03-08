@@ -67,7 +67,7 @@ export default function UserManagement() {
     return matchesRole && matchesSearch;
   });
 
-  const countByRole = (role: string) => allMembers.filter((m) => m.role === role).length;
+  const countByRole = (...roles: string[]) => allMembers.filter((m) => roles.includes(m.role)).length;
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return toast.error("Email required");
