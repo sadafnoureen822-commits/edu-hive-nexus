@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, School, GraduationCap, Users, ArrowLeft, ChevronRight } from "lucide-react";
+import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, School, GraduationCap, Users, ArrowLeft, ChevronRight, ShieldCheck } from "lucide-react";
 
-type PortalKey = "superadmin" | "admin" | "teacher" | "student" | "parent" | null;
+type PortalKey = "superadmin" | "admin" | "teacher" | "student" | "parent" | "principal" | null;
 
 const PORTAL_CARDS = [
   {
