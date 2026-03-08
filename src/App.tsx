@@ -141,7 +141,7 @@ function App() {
               <Route path="parent" element={<ParentDashboard />} />
             </Route>
 
-            {/* Marks & Results under institution */}
+            {/* Public site routes */}
             <Route path="/site/:slug/*" element={<PublicSite />} />
             <Route path="/verify" element={<CertificateVerification />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -151,6 +151,7 @@ function App() {
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+}
 
 export default App;
