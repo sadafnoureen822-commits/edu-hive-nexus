@@ -224,7 +224,7 @@ export default function Auth() {
               <button
                 key={key}
                 type="button"
-                onClick={() => setSelectedPortal(key)}
+                onClick={() => navigate(`/${key}/login`)}
                 className={`flex items-center gap-4 p-4 rounded-2xl border-2 ${lightBg} text-left transition-all duration-150 hover:scale-[1.01] hover:shadow-md active:scale-[0.99] group`}
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
