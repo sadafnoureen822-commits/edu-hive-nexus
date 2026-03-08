@@ -230,7 +230,7 @@ export default function PrincipalDashboard() {
           <div className="flex justify-between items-center mb-3">
             <p className="text-xs text-muted-foreground">{students.length} student{students.length !== 1 ? "s" : ""} · ranked by avg score</p>
             <div className="flex gap-2">
-              <ExportButton data={studentSummary.map((s, i) => ({ Rank: i + 1, Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount }))} fileName="student-results-ranking" sheetName="Students" />
+              <AIDataExport contextData={studentSummary.map((s, i) => ({ Rank: i + 1, Name: s.full_name ?? "", "Avg Score": s.avg ?? "", "Results Count": s.marksCount }))} label="Export" exportTitle="Student Rankings" fileName="student-results-ranking" />
               <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" onClick={() => go("/marks")}>
                 Full Results <ArrowRight className="h-3 w-3" />
               </Button>
