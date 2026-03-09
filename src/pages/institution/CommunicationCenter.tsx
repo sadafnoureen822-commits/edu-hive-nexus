@@ -105,12 +105,23 @@ export default function CommunicationCenter() {
   });
 
   const onSendEmail = async (values: EmailFormValues) => {
-    await sendEmail.mutateAsync(values);
+    await sendEmail.mutateAsync({
+      recipient_email: values.recipient_email,
+      recipient_name: values.recipient_name,
+      subject: values.subject,
+      body: values.body,
+      audience: values.audience,
+    });
     emailForm.reset();
   };
 
   const onSendWhatsApp = async (values: WhatsAppFormValues) => {
-    await sendWhatsApp.mutateAsync(values);
+    await sendWhatsApp.mutateAsync({
+      recipient_phone: values.recipient_phone,
+      recipient_name: values.recipient_name,
+      message: values.message,
+      audience: values.audience,
+    });
     waForm.reset();
   };
 
