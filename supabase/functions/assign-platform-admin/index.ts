@@ -11,7 +11,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify the caller is authenticated
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Missing authorization" }), {
@@ -20,7 +19,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role client to insert into platform_roles
+    // Parse body for bootstrap secret
+    let body: { bootstrap_secret?: string } = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -41,6 +47,40 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // ── Security Gate ──────────────────────────────────────────────────────
+    // Check if any platform admin already exists
+    const { count: existingAdminCount } = await supabaseAdmin
+      .from("platform_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "platform_admin");
+
+    if ((existingAdminCount ?? 0) > 0) {
+      // Admins already exist — only allow an existing platform admin to call this
+      const { data: callerRole } = await supabaseAdmin
+        .from("platform_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "platform_admin")
+        .maybeSingle();
+
+      if (!callerRole) {
+        return new Response(JSON.stringify({ error: "Forbidden: Platform admin already exists. Only an existing admin can grant this role." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      // No admins exist yet — require the bootstrap secret for first-time setup
+      const bootstrapSecret = Deno.env.get("PLATFORM_BOOTSTRAP_SECRET");
+      if (!bootstrapSecret || body.bootstrap_secret !== bootstrapSecret) {
+        return new Response(JSON.stringify({ error: "Forbidden: Valid bootstrap secret required for initial admin setup." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+    // ── End Security Gate ──────────────────────────────────────────────────
 
     // Check if the user already has a platform role (prevent duplicates)
     const { data: existing } = await supabaseAdmin
