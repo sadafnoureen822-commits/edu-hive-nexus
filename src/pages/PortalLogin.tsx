@@ -557,10 +557,10 @@ export default function PortalLogin() {
 
             {/* Signup note for institution portals */}
             {mode === "signup" && meta.signupNote && (
-              <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <div className="mt-4 p-3 rounded-xl bg-secondary border border-border/60">
                 <div className="flex items-start gap-2">
-                  <Info className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
-                  <p className="text-[11px] text-amber-800 leading-relaxed">{meta.signupNote}</p>
+                  <Info className="h-3.5 w-3.5 text-accent mt-0.5 shrink-0" />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{meta.signupNote}</p>
                 </div>
               </div>
             )}
