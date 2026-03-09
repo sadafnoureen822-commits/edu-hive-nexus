@@ -510,6 +510,26 @@ export default function PortalLogin() {
                 </div>
               )}
 
+              {/* Bootstrap Secret — super-admin signup only */}
+              {mode === "signup" && portal === "super-admin" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="bootstrapSecret">Bootstrap Secret</Label>
+                  <div className="relative">
+                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="bootstrapSecret"
+                      type="password"
+                      placeholder="Platform bootstrap secret"
+                      value={bootstrapSecret}
+                      onChange={(e) => setBootstrapSecret(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Contact the system owner for the platform bootstrap secret.</p>
+                </div>
+              )}
+
               <Button type="submit" className="w-full h-11 text-sm font-semibold" disabled={loading}>
                 {loading
                   ? "Please wait..."
