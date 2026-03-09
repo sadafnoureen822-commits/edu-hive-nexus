@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify";
+
 interface PublicSectionRendererProps {
   section: any;
   settings: any;
