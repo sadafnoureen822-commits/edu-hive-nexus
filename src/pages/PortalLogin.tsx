@@ -3,7 +3,7 @@
  * Mounted at /:portal/login (super-admin, admin, teacher, student, parent)
  */
 import { useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,8 +79,8 @@ export default function PortalLogin() {
   // useParams only works when mounted at /:portal/login.
   // For explicit static routes (/super-admin/login, /admin/login …) derive portal from the pathname.
   const { portal: paramPortal } = useParams<{ portal: string }>();
-  const { pathname } = window.location;
-  const derivedPortal = (paramPortal ?? pathname.split("/")[1]) as PortalSlug;
+  const location = useLocation();
+  const derivedPortal = (paramPortal ?? location.pathname.split("/")[1]) as PortalSlug;
   const portal = derivedPortal;
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -308,8 +308,8 @@ export default function PortalLogin() {
           </div>
           <Card className="border-border/60 shadow-lg bg-card text-center">
             <CardContent className="px-6 py-10 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="h-8 w-8 text-primary" />
               </div>
               <h2 className="text-xl font-display font-bold text-foreground">
                 {portal === "super-admin" ? "Super Admin Account Created!" : "Account Created!"}
@@ -321,10 +321,10 @@ export default function PortalLogin() {
                 }
               </p>
               {meta.signupNote && (
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-left">
+                <div className="p-3 rounded-xl bg-accent/10 border border-accent/20 text-left">
                   <div className="flex items-start gap-2">
-                    <Shield className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-                    <p className="text-xs text-blue-800">{meta.signupNote}</p>
+                    <Shield className="h-4 w-4 text-accent mt-0.5 shrink-0" />
+                    <p className="text-xs text-foreground/80">{meta.signupNote}</p>
                   </div>
                 </div>
               )}
@@ -557,10 +557,10 @@ export default function PortalLogin() {
 
             {/* Signup note for institution portals */}
             {mode === "signup" && meta.signupNote && (
-              <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <div className="mt-4 p-3 rounded-xl bg-secondary border border-border/60">
                 <div className="flex items-start gap-2">
-                  <Info className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
-                  <p className="text-[11px] text-amber-800 leading-relaxed">{meta.signupNote}</p>
+                  <Info className="h-3.5 w-3.5 text-accent mt-0.5 shrink-0" />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{meta.signupNote}</p>
                 </div>
               </div>
             )}
