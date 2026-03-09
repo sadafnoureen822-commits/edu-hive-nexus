@@ -78,13 +78,15 @@ function App() {
             {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            {/* Role-specific portal login — MUST be listed before /:slug so exact portals take priority */}
+            {/* Role-specific portal login — explicit static paths AND dynamic catch-all */}
             <Route path="/super-admin/login" element={<PortalLogin />} />
             <Route path="/admin/login" element={<PortalLogin />} />
             <Route path="/teacher/login" element={<PortalLogin />} />
             <Route path="/student/login" element={<PortalLogin />} />
             <Route path="/parent/login" element={<PortalLogin />} />
             <Route path="/principal/login" element={<PortalLogin />} />
+            {/* Dynamic fallback — e.g. any future /:portal/login */}
+            <Route path="/:portal/login" element={<PortalLogin />} />
 
             {/* Admin routes (platform admin) */}
             <Route
