@@ -5,12 +5,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Renders a certificate or report card to HTML, then returns it for client-side printing.
-// For full server-side PDF, integrate a headless browser service here.
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // Require a valid JWT
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const token = authHeader.replace("Bearer ", "");
+
+    // Verify JWT and get caller identity
+    const anonClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
+    );
+    const { data: { user }, error: authError } = await anonClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Service role client for privileged data access
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -26,10 +47,41 @@ Deno.serve(async (req) => {
         .single();
       if (error || !cert) throw new Error("Certificate not found");
 
+      // Authorization: caller must be the student, a linked parent, or an institution member
+      const isStudent = cert.student_id === user.id;
+      let isAuthorized = isStudent;
+
+      if (!isAuthorized) {
+        // Check if caller is a parent linked to this student
+        const { data: parentLink } = await supabase
+          .from("parent_student_links")
+          .select("id")
+          .eq("parent_user_id", user.id)
+          .eq("student_user_id", cert.student_id)
+          .maybeSingle();
+        if (parentLink) isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        // Check if caller is an institution member of the cert's institution
+        const { data: member } = await supabase
+          .from("institution_members")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("institution_id", cert.institution_id)
+          .maybeSingle();
+        if (member) isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const certData = cert.certificate_data as Record<string, string> || {};
       let html = cert.certificate_templates?.template_html || "<div>Certificate</div>";
 
-      // Replace template variables
       Object.entries(certData).forEach(([key, val]) => {
         html = html.replaceAll(`{{${key}}}`, String(val));
       });
@@ -52,14 +104,55 @@ Deno.serve(async (req) => {
     }
 
     if (type === "report_card") {
-      // Fetch exam results for a student
+      const studentId = id;
+
+      // Authorization: caller must be the student, a linked parent, or an institution member
+      const isStudent = studentId === user.id;
+      let isAuthorized = isStudent;
+
+      if (!isAuthorized) {
+        const { data: parentLink } = await supabase
+          .from("parent_student_links")
+          .select("id")
+          .eq("parent_user_id", user.id)
+          .eq("student_user_id", studentId)
+          .maybeSingle();
+        if (parentLink) isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        // Check if caller is an institution member for any institution this student belongs to
+        const { data: studentMembership } = await supabase
+          .from("institution_members")
+          .select("institution_id")
+          .eq("user_id", studentId)
+          .limit(1)
+          .maybeSingle();
+
+        if (studentMembership) {
+          const { data: callerMember } = await supabase
+            .from("institution_members")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("institution_id", studentMembership.institution_id)
+            .maybeSingle();
+          if (callerMember) isAuthorized = true;
+        }
+      }
+
+      if (!isAuthorized) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const { data: marks, error } = await supabase
         .from("student_marks")
         .select(`
           *,
           exam_subjects(*, subjects(name, code), exams(name, exam_type, classes(name)))
         `)
-        .eq("student_id", id)
+        .eq("student_id", studentId)
         .eq("status", "approved");
 
       if (error) throw error;

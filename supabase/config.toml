@@ -7,7 +7,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.generate-pdf]
-verify_jwt = false
+verify_jwt = true
 
 [functions.auto-billing]
 verify_jwt = true

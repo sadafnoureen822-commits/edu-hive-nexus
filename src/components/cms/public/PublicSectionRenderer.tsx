@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify";
+
 interface PublicSectionRendererProps {
   section: any;
   settings: any;
@@ -51,28 +53,34 @@ export default function PublicSectionRenderer({
             />
           </div>
         ) : null;
-      case "button":
+      case "button": {
+        // Block javascript: URIs to prevent XSS
+        const safeUrl = /^https?:\/\//i.test(content.url || "") ? content.url : "#";
         return (
           <a
             key={block.id}
-            href={content.url || "#"}
+            href={safeUrl}
             className="inline-block px-6 py-3 rounded-lg text-white font-medium mb-4 transition-opacity hover:opacity-90"
             style={{ backgroundColor: primaryColor }}
           >
             {content.text || "Button"}
           </a>
         );
-      case "video":
-        return content.url ? (
+      }
+      case "video": {
+        // Only allow http/https embed URLs
+        const safeVideoUrl = /^https?:\/\//i.test(content.url || "") ? content.url : null;
+        return safeVideoUrl ? (
           <div key={block.id} className="mb-4 aspect-video rounded-lg overflow-hidden">
             <iframe
-              src={content.url}
+              src={safeVideoUrl}
               className="w-full h-full"
               allowFullScreen
               title="Video"
             />
           </div>
         ) : null;
+      }
       case "divider":
         return (
           <hr
@@ -86,7 +94,7 @@ export default function PublicSectionRenderer({
           <div
             key={block.id}
             className="mb-4"
-            dangerouslySetInnerHTML={{ __html: content.html }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content.html) }}
           />
         ) : null;
       default:
