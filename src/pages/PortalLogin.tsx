@@ -286,6 +286,7 @@ export default function PortalLogin() {
 
   const resetForm = () => {
     setEmail(""); setPassword(""); setConfirmPassword(""); setFullName("");
+    setBootstrapSecret("");
     setShowPassword(false); setShowConfirm(false); setSignupDone(false);
   };
 
