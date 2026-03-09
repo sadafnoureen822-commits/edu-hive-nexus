@@ -308,8 +308,8 @@ export default function PortalLogin() {
           </div>
           <Card className="border-border/60 shadow-lg bg-card text-center">
             <CardContent className="px-6 py-10 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="h-8 w-8 text-primary" />
               </div>
               <h2 className="text-xl font-display font-bold text-foreground">
                 {portal === "super-admin" ? "Super Admin Account Created!" : "Account Created!"}
