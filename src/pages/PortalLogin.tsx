@@ -79,8 +79,8 @@ export default function PortalLogin() {
   // useParams only works when mounted at /:portal/login.
   // For explicit static routes (/super-admin/login, /admin/login …) derive portal from the pathname.
   const { portal: paramPortal } = useParams<{ portal: string }>();
-  const { pathname } = window.location;
-  const derivedPortal = (paramPortal ?? pathname.split("/")[1]) as PortalSlug;
+  const location = useLocation();
+  const derivedPortal = (paramPortal ?? location.pathname.split("/")[1]) as PortalSlug;
   const portal = derivedPortal;
   const navigate = useNavigate();
   const { toast } = useToast();
