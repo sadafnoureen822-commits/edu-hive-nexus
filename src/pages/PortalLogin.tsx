@@ -321,10 +321,10 @@ export default function PortalLogin() {
                 }
               </p>
               {meta.signupNote && (
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-left">
+                <div className="p-3 rounded-xl bg-accent/10 border border-accent/20 text-left">
                   <div className="flex items-start gap-2">
-                    <Shield className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-                    <p className="text-xs text-blue-800">{meta.signupNote}</p>
+                    <Shield className="h-4 w-4 text-accent mt-0.5 shrink-0" />
+                    <p className="text-xs text-foreground/80">{meta.signupNote}</p>
                   </div>
                 </div>
               )}
