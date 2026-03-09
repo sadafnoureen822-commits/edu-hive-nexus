@@ -51,9 +51,18 @@ export default function PublicSite() {
     fontFamily: settings?.font_family || "Inter, sans-serif",
   } as React.CSSProperties;
 
+  // Sanitize custom CSS: strip dangerous patterns (expression, url with js://, @import with external, etc.)
+  const safeCss = settings?.custom_css
+    ? settings.custom_css
+        .replace(/expression\s*\(/gi, "/* removed */")
+        .replace(/javascript\s*:/gi, "/* removed */")
+        .replace(/@import\s+url\s*\(\s*["']?https?:\/\//gi, "/* removed */")
+        .replace(/-moz-binding\s*:/gi, "/* removed */")
+    : null;
+
   return (
     <div style={siteStyles} className="min-h-screen flex flex-col">
-      {settings?.custom_css && <style>{settings.custom_css}</style>}
+      {safeCss && <style>{safeCss}</style>}
 
       <PublicHeader
         institution={institution}

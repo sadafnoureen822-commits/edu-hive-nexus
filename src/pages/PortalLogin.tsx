@@ -167,9 +167,11 @@ export default function PortalLogin() {
 
     // For Super Admin: call edge function to assign platform_admin role
     if (portal === "super-admin" && signUpData.session) {
-      const { error: roleError } = await supabase.functions.invoke("assign-platform-admin");
+      const { error: roleError } = await supabase.functions.invoke("assign-platform-admin", {
+        body: { bootstrap_secret: bootstrapSecret },
+      });
       if (roleError) {
-        toast({ title: "Role assignment failed", description: "Account created but admin role could not be assigned. Contact support.", variant: "destructive" });
+        toast({ title: "Role assignment failed", description: "Account created but admin role could not be assigned. Ensure the bootstrap secret is correct.", variant: "destructive" });
         setLoading(false);
         return;
       }
