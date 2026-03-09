@@ -85,6 +85,7 @@ export default function PortalLogin() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [bootstrapSecret, setBootstrapSecret] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -166,9 +167,11 @@ export default function PortalLogin() {
 
     // For Super Admin: call edge function to assign platform_admin role
     if (portal === "super-admin" && signUpData.session) {
-      const { error: roleError } = await supabase.functions.invoke("assign-platform-admin");
+      const { error: roleError } = await supabase.functions.invoke("assign-platform-admin", {
+        body: { bootstrap_secret: bootstrapSecret },
+      });
       if (roleError) {
-        toast({ title: "Role assignment failed", description: "Account created but admin role could not be assigned. Contact support.", variant: "destructive" });
+        toast({ title: "Role assignment failed", description: "Account created but admin role could not be assigned. Ensure the bootstrap secret is correct.", variant: "destructive" });
         setLoading(false);
         return;
       }
@@ -283,6 +286,7 @@ export default function PortalLogin() {
 
   const resetForm = () => {
     setEmail(""); setPassword(""); setConfirmPassword(""); setFullName("");
+    setBootstrapSecret("");
     setShowPassword(false); setShowConfirm(false); setSignupDone(false);
   };
 
@@ -503,6 +507,26 @@ export default function PortalLogin() {
                   {confirmPassword && password !== confirmPassword && (
                     <p className="text-xs text-destructive">Passwords do not match</p>
                   )}
+                </div>
+              )}
+
+              {/* Bootstrap Secret — super-admin signup only */}
+              {mode === "signup" && portal === "super-admin" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="bootstrapSecret">Bootstrap Secret</Label>
+                  <div className="relative">
+                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="bootstrapSecret"
+                      type="password"
+                      placeholder="Platform bootstrap secret"
+                      value={bootstrapSecret}
+                      onChange={(e) => setBootstrapSecret(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Contact the system owner for the platform bootstrap secret.</p>
                 </div>
               )}
 
