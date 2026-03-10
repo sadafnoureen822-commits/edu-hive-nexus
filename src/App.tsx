@@ -18,6 +18,7 @@ import MembersPage from "./pages/admin/Members";
 import RoleAssignmentPage from "./pages/admin/RoleAssignment";
 import ModuleControlPage from "./pages/admin/ModuleControl";
 import BillingDashboard from "./pages/admin/BillingDashboard";
+import IntegrationsPage from "./pages/admin/Integrations";
 import InstitutionLayout from "./components/layout/InstitutionLayout";
 import InstitutionOverview from "./pages/institution/InstitutionOverview";
 import InstitutionProfile from "./pages/institution/InstitutionProfile";
@@ -105,6 +106,7 @@ function App() {
               <Route path="role-assignment" element={<RoleAssignmentPage />} />
               <Route path="billing" element={<BillingDashboard />} />
               <Route path="module-control" element={<ModuleControlPage />} />
+              <Route path="integrations" element={<IntegrationsPage />} />
             </Route>
 
             {/* Institution routes (tenant) — wrapped in ProtectedRoute so unauthenticated users go to /auth */}
