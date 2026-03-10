@@ -106,6 +106,7 @@ function App() {
               <Route path="role-assignment" element={<RoleAssignmentPage />} />
               <Route path="billing" element={<BillingDashboard />} />
               <Route path="module-control" element={<ModuleControlPage />} />
+              <Route path="integrations" element={<IntegrationsPage />} />
             </Route>
 
             {/* Institution routes (tenant) — wrapped in ProtectedRoute so unauthenticated users go to /auth */}

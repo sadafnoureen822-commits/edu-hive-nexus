@@ -39,6 +39,12 @@ const navSections = [
       { href: "/admin/billing",      label: "Billing & Revenue", icon: CreditCard },
     ],
   },
+  {
+    label: "Platform",
+    items: [
+      { href: "/admin/integrations", label: "Integrations",      icon: Plug },
+    ],
+  },
 ];
 
 export default function AdminLayout() {
