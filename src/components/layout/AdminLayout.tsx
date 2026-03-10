@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Building2, Globe, Users, LayoutDashboard, LogOut,
   Shield, CreditCard, UserCog, ChevronLeft, ChevronRight,
-  Settings2,
+  Settings2, Plug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
