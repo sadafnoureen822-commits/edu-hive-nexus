@@ -3394,6 +3394,14 @@ export type Database = {
         Args: { _institution_id: string; _user_id: string }
         Returns: boolean
       }
+      is_institution_parent: {
+        Args: { _institution_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_institution_teacher: {
+        Args: { _institution_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
